@@ -296,7 +296,7 @@ const Footer = () => (
 // =============================================
 // CART DRAWER
 // =============================================
-const CartDrawer = ({ show, onClose, cart, setCart, country, onCheckout }) => {
+const CartDrawer = ({ show, onClose, cart, setCart, country, onCheckout, isCheckingOut }) => {
   const [promoCode, setPromoCode] = useState('');
   const [appliedCode, setAppliedCode] = useState(null);
   const [promoError, setPromoError] = useState('');
@@ -367,7 +367,9 @@ const CartDrawer = ({ show, onClose, cart, setCart, country, onCheckout }) => {
               <div style={{ display: 'flex', justifyContent: 'space-between', color: COLORS.textMuted, fontSize: 14, marginBottom: 8 }}><span>Shipping</span><span style={{ color: freeShipping ? COLORS.success : undefined }}>{freeShipping ? 'FREE' : formatPrice(shipping, country)}</span></div>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: '#fff', fontSize: 18, fontWeight: 700, paddingTop: 12, borderTop: `1px solid ${COLORS.border}` }}><span>Total</span><span>{formatPrice(total, country)}</span></div>
             </div>
-            <button onClick={onCheckout} style={{ width: '100%', background: `linear-gradient(135deg, ${COLORS.accent} 0%, #FF6B2B 100%)`, color: '#fff', border: 'none', borderRadius: 8, padding: '16px', fontSize: 18, fontWeight: 700, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2, cursor: 'pointer', boxShadow: `0 4px 20px ${COLORS.accentGlow}` }}>CHECKOUT →</button>
+            <button onClick={onCheckout} disabled={isCheckingOut} style={{ width: '100%', background: isCheckingOut ? COLORS.border : `linear-gradient(135deg, ${COLORS.accent} 0%, #FF6B2B 100%)`, color: '#fff', border: 'none', borderRadius: 8, padding: '16px', fontSize: 18, fontWeight: 700, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2, cursor: isCheckingOut ? 'wait' : 'pointer', boxShadow: isCheckingOut ? 'none' : `0 4px 20px ${COLORS.accentGlow}` }}>
+              {isCheckingOut ? 'REDIRECTING...' : 'CHECKOUT →'}
+            </button>
             <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 16, color: COLORS.textMuted, fontSize: 12 }}><span>🔒 Secure</span><span>💳 Afterpay</span><span>↩️ 30-Day Returns</span></div>
           </div>
         )}
@@ -492,6 +494,23 @@ const Notification = ({ show, message }) => {
 };
 
 // =============================================
+// SUCCESS/CANCEL BANNERS
+// =============================================
+const SuccessBanner = ({ onClose }) => (
+  <div style={{ background: COLORS.success, color: '#000', padding: '16px 24px', textAlign: 'center', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12 }}>
+    <span>🎉 Order confirmed! Check your email for receipt and shipping updates.</span>
+    <button onClick={onClose} style={{ background: 'transparent', border: 'none', fontSize: 20, cursor: 'pointer' }}>×</button>
+  </div>
+);
+
+const CancelBanner = ({ onClose }) => (
+  <div style={{ background: COLORS.error, color: '#fff', padding: '16px 24px', textAlign: 'center', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12 }}>
+    <span>Order canceled. Your cart is still saved!</span>
+    <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: 20, cursor: 'pointer' }}>×</button>
+  </div>
+);
+
+// =============================================
 // MAIN APP
 // =============================================
 const App = () => {
@@ -507,6 +526,23 @@ const App = () => {
   const [socialProof, setSocialProof] = useState(null);
   const [notification, setNotification] = useState(null);
   const [saleEnd] = useState(() => Date.now() + 24 * 60 * 60 * 1000);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showCancel, setShowCancel] = useState(false);
+
+  // Check URL for success/cancel
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('success') === 'true') {
+      setShowSuccess(true);
+      setCart([]);
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+    if (params.get('canceled') === 'true') {
+      setShowCancel(true);
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
 
   // Persist cart & country
   useEffect(() => { localStorage.setItem('ark-cart', JSON.stringify(cart)); }, [cart]);
@@ -526,8 +562,23 @@ const App = () => {
   // View product
   const handleViewDetails = (product) => { setSelectedProduct(product); setShowProductModal(true); };
 
-  // Checkout
-  const handleCheckout = () => alert('Stripe checkout integration needed!\n\nSee README.md for setup instructions.');
+  // Checkout with Stripe
+  const handleCheckout = async () => {
+    setIsCheckingOut(true);
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: cart, country }),
+      });
+      const { url, error } = await response.json();
+      if (error) throw new Error(error);
+      window.location.href = url;
+    } catch (err) {
+      alert('Checkout error: ' + err.message);
+      setIsCheckingOut(false);
+    }
+  };
 
   // Exit intent
   useEffect(() => {
@@ -546,6 +597,8 @@ const App = () => {
 
   return (
     <div style={{ minHeight: '100vh', background: COLORS.bg, fontFamily: "'Inter', sans-serif" }}>
+      {showSuccess && <SuccessBanner onClose={() => setShowSuccess(false)} />}
+      {showCancel && <CancelBanner onClose={() => setShowCancel(false)} />}
       <Header cart={cart} setShowCart={setShowCart} country={country} setShowCountry={setShowCountry} />
       <Hero saleEnd={saleEnd} />
       <TrustBar />
@@ -555,7 +608,7 @@ const App = () => {
       <FAQSection />
       <Footer />
       
-      <CartDrawer show={showCart} onClose={() => setShowCart(false)} cart={cart} setCart={setCart} country={country} onCheckout={handleCheckout} />
+      <CartDrawer show={showCart} onClose={() => setShowCart(false)} cart={cart} setCart={setCart} country={country} onCheckout={handleCheckout} isCheckingOut={isCheckingOut} />
       <ProductModal product={selectedProduct} show={showProductModal} onClose={() => setShowProductModal(false)} country={country} onAdd={handleAddToCart} />
       <CountrySelector show={showCountry} onClose={() => setShowCountry(false)} country={country} setCountry={setCountry} />
       <ExitIntent show={showExitIntent} onClose={() => setShowExitIntent(false)} />
