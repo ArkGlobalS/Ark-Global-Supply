@@ -11,11 +11,11 @@ const randomInRange = (min, max) => Math.floor(Math.random() * (max - min + 1)) 
 // =============================================
 // SMALL COMPONENTS
 // =============================================
-const Stars = ({ rating = 5 }) => (
-  <span style={{ color: COLORS.gold }}>{'★'.repeat(Math.floor(rating))}{'☆'.repeat(5 - Math.floor(rating))}</span>
+const Stars = ({ rating = 5, color = COLORS.gold }) => (
+  <span style={{ color }}>{'★'.repeat(Math.floor(rating))}{'☆'.repeat(5 - Math.floor(rating))}</span>
 );
 
-const Timer = ({ endTime }) => {
+const Timer = ({ endTime, accentColor = COLORS.accent }) => {
   const [time, setTime] = useState({ h: 0, m: 0, s: 0 });
   useEffect(() => {
     const interval = setInterval(() => {
@@ -29,7 +29,7 @@ const Timer = ({ endTime }) => {
     <div style={{ display: 'flex', gap: 8 }}>
       {[{ v: time.h, l: 'HRS' }, { v: time.m, l: 'MIN' }, { v: time.s, l: 'SEC' }].map((b, i) => (
         <div key={i} style={{ textAlign: 'center' }}>
-          <div style={{ background: COLORS.accent, color: '#fff', borderRadius: 6, padding: '8px 12px', fontSize: 18, fontWeight: 800, fontFamily: 'monospace', minWidth: 44 }}>
+          <div style={{ background: accentColor, color: '#fff', borderRadius: 6, padding: '8px 12px', fontSize: 18, fontWeight: 800, fontFamily: 'monospace', minWidth: 44 }}>
             {String(b.v).padStart(2, '0')}
           </div>
           <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.7)', marginTop: 4, fontWeight: 600, letterSpacing: 1 }}>{b.l}</div>
@@ -40,32 +40,60 @@ const Timer = ({ endTime }) => {
 };
 
 // =============================================
-// HEADER
+// HEADER WITH NAVIGATION
 // =============================================
-const Header = ({ cart, setShowCart, country, setShowCountry }) => {
+const Header = ({ cart, setShowCart, country, setShowCountry, currentPage, setCurrentPage }) => {
   const cartCount = cart.reduce((sum, item) => sum + item.qty, 0);
+  
+  const getPageAccent = () => {
+    switch(currentPage) {
+      case 'womens': return COLORS.womens.primary;
+      case 'kids': return COLORS.kids.primary;
+      case 'gifts': return COLORS.gifts.primary;
+      default: return COLORS.accent;
+    }
+  };
+  
   return (
     <>
-      <div style={{ background: COLORS.accent, color: '#fff', textAlign: 'center', padding: '10px 20px', fontSize: 13, fontWeight: 600 }}>
-        🔥 FREE SHIPPING ON ORDERS OVER ${SITE.shipping.freeThreshold} | USE CODE <strong>ALPHA20</strong> FOR 20% OFF
+      <div style={{ background: getPageAccent(), color: '#fff', textAlign: 'center', padding: '10px 20px', fontSize: 13, fontWeight: 600 }}>
+        🔥 FREE SHIPPING ON ORDERS OVER ${SITE.shipping.freeThreshold} | USE CODE <strong>SAVE10</strong> FOR 10% OFF
       </div>
       <header style={{ background: COLORS.bg, borderBottom: `1px solid ${COLORS.border}`, padding: '16px 24px', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ maxWidth: 1400, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+          <button onClick={() => setCurrentPage('home')} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'baseline', gap: 8 }}>
             <span style={{ fontSize: 28, fontWeight: 800, color: '#fff', fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2 }}>{SITE.name}</span>
-            <span style={{ fontSize: 12, color: COLORS.accent, fontWeight: 600, letterSpacing: 1 }}>{SITE.tagline}</span>
-          </div>
-          <nav style={{ display: 'flex', gap: 32 }}>
-            {['SHOP', "MEN'S", 'BUNDLES', 'SALE'].map((item) => (
-              <a key={item} href={item === "MEN'S" ? '#mens' : '#products'} style={{ color: '#fff', textDecoration: 'none', fontSize: 14, fontWeight: 600, letterSpacing: 1 }}>{item}</a>
+            <span style={{ fontSize: 12, color: getPageAccent(), fontWeight: 600, letterSpacing: 1 }}>{SITE.tagline}</span>
+          </button>
+          <nav style={{ display: 'flex', gap: 8 }}>
+            {SITE.pages.map((page) => (
+              <button key={page.id} onClick={() => setCurrentPage(page.id)}
+                style={{ 
+                  background: currentPage === page.id ? (
+                    page.id === 'womens' ? COLORS.womens.primary :
+                    page.id === 'kids' ? COLORS.kids.primary :
+                    page.id === 'gifts' ? COLORS.gifts.primary :
+                    page.id === 'mens' ? COLORS.mens.primary : COLORS.accent
+                  ) : 'transparent',
+                  border: `1px solid ${currentPage === page.id ? 'transparent' : COLORS.border}`,
+                  color: '#fff', 
+                  padding: '10px 20px', 
+                  borderRadius: 8, 
+                  fontSize: 13, 
+                  fontWeight: 600, 
+                  cursor: 'pointer',
+                  letterSpacing: 1
+                }}>
+                {page.icon} {page.label}
+              </button>
             ))}
           </nav>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <button onClick={() => setShowCountry(true)} style={{ background: 'transparent', border: `1px solid ${COLORS.border}`, borderRadius: 6, padding: '8px 12px', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
               <span>{country.flag}</span><span>{country.currency}</span>
             </button>
-            <button onClick={() => setShowCart(true)} style={{ background: COLORS.accent, border: 'none', borderRadius: 8, padding: '10px 20px', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
-              🛒 CART {cartCount > 0 && <span style={{ background: '#fff', color: COLORS.accent, borderRadius: '50%', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800 }}>{cartCount}</span>}
+            <button onClick={() => setShowCart(true)} style={{ background: getPageAccent(), border: 'none', borderRadius: 8, padding: '10px 20px', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+              🛒 CART {cartCount > 0 && <span style={{ background: '#fff', color: getPageAccent(), borderRadius: '50%', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800 }}>{cartCount}</span>}
             </button>
           </div>
         </div>
@@ -75,9 +103,9 @@ const Header = ({ cart, setShowCart, country, setShowCountry }) => {
 };
 
 // =============================================
-// HERO
+// HOME PAGE HERO
 // =============================================
-const Hero = ({ saleEnd }) => (
+const HomeHero = ({ saleEnd, setCurrentPage }) => (
   <section style={{ background: `linear-gradient(135deg, ${COLORS.bg} 0%, #1a1a1a 100%)`, padding: '80px 24px', position: 'relative' }}>
     <div style={{ position: 'absolute', top: 0, right: 0, width: '50%', height: '100%', background: `radial-gradient(circle at 70% 50%, ${COLORS.accentGlow} 0%, transparent 50%)`, pointerEvents: 'none' }} />
     <div style={{ maxWidth: 1400, margin: '0 auto', position: 'relative', zIndex: 1 }}>
@@ -86,16 +114,33 @@ const Hero = ({ saleEnd }) => (
         <Stars rating={5} />
         <span style={{ color: COLORS.gold, fontSize: 13, fontWeight: 600 }}>4.9 (2.4k reviews)</span>
       </div>
-      <h1 style={{ fontSize: 'clamp(48px, 8vw, 80px)', fontWeight: 800, color: '#fff', fontFamily: "'Bebas Neue', sans-serif", lineHeight: 1, marginBottom: 24, letterSpacing: 2 }}>
-        {SITE.hero.headline.split('. ').map((line, i) => <span key={i}>{line}{i < 2 ? '.' : ''}<br /></span>)}
+      <h1 style={{ fontSize: 'clamp(40px, 7vw, 72px)', fontWeight: 800, color: '#fff', fontFamily: "'Bebas Neue', sans-serif", lineHeight: 1.1, marginBottom: 24, letterSpacing: 2 }}>
+        {SITE.hero.headline}
       </h1>
       <p style={{ fontSize: 18, color: COLORS.textMuted, maxWidth: 500, marginBottom: 32, lineHeight: 1.6 }}>{SITE.hero.subheadline}</p>
-      <div style={{ display: 'flex', gap: 16, marginBottom: 40 }}>
-        <a href="#mens" style={{ background: `linear-gradient(135deg, ${COLORS.accent} 0%, #FF6B2B 100%)`, color: '#fff', padding: '16px 32px', borderRadius: 8, fontSize: 18, fontWeight: 700, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2, textDecoration: 'none', boxShadow: `0 4px 20px ${COLORS.accentGlow}` }}>SHOP MEN'S →</a>
-        <a href="#products" style={{ background: 'transparent', color: '#fff', padding: '16px 32px', borderRadius: 8, fontSize: 18, fontWeight: 700, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2, textDecoration: 'none', border: `2px solid ${COLORS.border}` }}>ALL BUNDLES</a>
+      
+      {/* Category Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 40, maxWidth: 800 }}>
+        <button onClick={() => setCurrentPage('mens')} style={{ background: `linear-gradient(135deg, ${COLORS.mens.primary} 0%, ${COLORS.mens.secondary} 100%)`, border: 'none', borderRadius: 12, padding: '24px 16px', cursor: 'pointer', textAlign: 'center' }}>
+          <div style={{ fontSize: 32, marginBottom: 8 }}>💪</div>
+          <div style={{ color: '#fff', fontWeight: 700, fontSize: 14, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 1 }}>MEN'S</div>
+        </button>
+        <button onClick={() => setCurrentPage('womens')} style={{ background: `linear-gradient(135deg, ${COLORS.womens.primary} 0%, ${COLORS.womens.secondary} 100%)`, border: 'none', borderRadius: 12, padding: '24px 16px', cursor: 'pointer', textAlign: 'center' }}>
+          <div style={{ fontSize: 32, marginBottom: 8 }}>👗</div>
+          <div style={{ color: '#fff', fontWeight: 700, fontSize: 14, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 1 }}>WOMEN'S</div>
+        </button>
+        <button onClick={() => setCurrentPage('kids')} style={{ background: `linear-gradient(135deg, ${COLORS.kids.primary} 0%, ${COLORS.kids.secondary} 100%)`, border: 'none', borderRadius: 12, padding: '24px 16px', cursor: 'pointer', textAlign: 'center' }}>
+          <div style={{ fontSize: 32, marginBottom: 8 }}>🎨</div>
+          <div style={{ color: '#fff', fontWeight: 700, fontSize: 14, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 1 }}>KIDS</div>
+        </button>
+        <button onClick={() => setCurrentPage('gifts')} style={{ background: `linear-gradient(135deg, ${COLORS.gifts.primary} 0%, ${COLORS.gifts.secondary} 100%)`, border: 'none', borderRadius: 12, padding: '24px 16px', cursor: 'pointer', textAlign: 'center' }}>
+          <div style={{ fontSize: 32, marginBottom: 8 }}>🎁</div>
+          <div style={{ color: '#fff', fontWeight: 700, fontSize: 14, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 1 }}>GIFTS</div>
+        </button>
       </div>
+      
       <div style={{ display: 'inline-flex', alignItems: 'center', gap: 16, background: COLORS.bgCard, border: `1px solid ${COLORS.border}`, borderRadius: 12, padding: '16px 24px' }}>
-        <div style={{ color: COLORS.accent, fontSize: 12, fontWeight: 700, letterSpacing: 1 }}>⚡ FLASH SALE ENDS IN</div>
+        <div style={{ color: COLORS.accent, fontSize: 12, fontWeight: 700, letterSpacing: 1 }}>⚡ RESTOCK COMING SOON</div>
         <Timer endTime={saleEnd} />
       </div>
     </div>
@@ -105,7 +150,7 @@ const Hero = ({ saleEnd }) => (
 // =============================================
 // TRUST BAR
 // =============================================
-const TrustBar = () => (
+const TrustBar = ({ accentColor = COLORS.accent }) => (
   <section style={{ background: COLORS.bgCard, borderTop: `1px solid ${COLORS.border}`, borderBottom: `1px solid ${COLORS.border}`, padding: '24px 20px' }}>
     <div style={{ maxWidth: 1400, margin: '0 auto', display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap', gap: 20 }}>
       {SITE.trustBadges.map((badge, i) => (
@@ -114,6 +159,10 @@ const TrustBar = () => (
           <span style={{ color: '#fff', fontSize: 13, fontWeight: 600, letterSpacing: 1 }}>{badge.text}</span>
         </div>
       ))}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <span style={{ fontSize: 24 }}>💳</span>
+        <span style={{ color: '#fff', fontSize: 13, fontWeight: 600, letterSpacing: 1 }}>AFTERPAY AVAILABLE</span>
+      </div>
     </div>
   </section>
 );
@@ -121,20 +170,19 @@ const TrustBar = () => (
 // =============================================
 // PRODUCT CARD
 // =============================================
-const ProductCard = ({ product, country, onAdd, onView }) => {
+const ProductCard = ({ product, country, onAdd, onView, theme = COLORS.mens }) => {
   const [hover, setHover] = useState(false);
   const [viewers] = useState(randomInRange(12, 89));
   const isSoldOut = product.stock === 0;
   
   return (
     <div onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} onClick={() => onView(product)}
-      style={{ background: COLORS.bgCard, borderRadius: 16, overflow: 'hidden', border: `2px solid ${hover && !isSoldOut ? COLORS.accent : COLORS.border}`, transition: 'all 0.3s ease', cursor: 'pointer', transform: hover && !isSoldOut ? 'translateY(-4px)' : 'none', boxShadow: hover && !isSoldOut ? `0 8px 30px ${COLORS.accentGlow}` : 'none', opacity: isSoldOut ? 0.7 : 1 }}>
+      style={{ background: COLORS.bgCard, borderRadius: 16, overflow: 'hidden', border: `2px solid ${hover && !isSoldOut ? theme.primary : COLORS.border}`, transition: 'all 0.3s ease', cursor: 'pointer', transform: hover && !isSoldOut ? 'translateY(-4px)' : 'none', boxShadow: hover && !isSoldOut ? `0 8px 30px ${theme.glow}` : 'none', opacity: isSoldOut ? 0.8 : 1 }}>
       <div style={{ position: 'relative' }}>
-        <img src={product.img} alt={product.name} style={{ width: '100%', height: 220, objectFit: 'cover', filter: isSoldOut ? 'grayscale(50%)' : 'none' }} />
-        <div style={{ position: 'absolute', top: 12, left: 12, background: isSoldOut ? '#555555' : product.tagBg, color: '#fff', padding: '6px 12px', borderRadius: 6, fontSize: 11, fontWeight: 700, letterSpacing: 1 }}>{isSoldOut ? 'SOLD OUT' : product.tag}</div>
-        {!isSoldOut && <div style={{ position: 'absolute', top: 12, right: 12, background: COLORS.bg, color: COLORS.accent, padding: '6px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700 }}>-{getDiscount(product.price, product.was)}%</div>}
+        <img src={product.img} alt={product.name} style={{ width: '100%', height: 220, objectFit: 'cover', filter: isSoldOut ? 'grayscale(40%)' : 'none' }} />
+        <div style={{ position: 'absolute', top: 12, left: 12, background: isSoldOut ? '#555555' : theme.primary, color: '#fff', padding: '6px 12px', borderRadius: 6, fontSize: 11, fontWeight: 700, letterSpacing: 1 }}>{isSoldOut ? 'SOLD OUT' : `${getDiscount(product.price, product.was)}% OFF`}</div>
         {isSoldOut && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ background: '#000', color: '#fff', padding: '12px 24px', borderRadius: 8, fontSize: 16, fontWeight: 700, letterSpacing: 2 }}>SOLD OUT</span>
+          <span style={{ background: '#000', color: '#fff', padding: '12px 24px', borderRadius: 8, fontSize: 14, fontWeight: 700, letterSpacing: 2 }}>SOLD OUT</span>
         </div>}
         {!isSoldOut && <div style={{ position: 'absolute', bottom: 12, left: 12, background: 'rgba(0,0,0,0.8)', color: '#fff', padding: '6px 10px', borderRadius: 6, fontSize: 11, display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ width: 8, height: 8, background: COLORS.success, borderRadius: '50%' }} />{viewers} viewing
@@ -143,12 +191,11 @@ const ProductCard = ({ product, country, onAdd, onView }) => {
       <div style={{ padding: 20 }}>
         <h3 style={{ color: '#fff', fontSize: 18, fontWeight: 700, marginBottom: 8, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 1 }}>{product.name}</h3>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <Stars rating={5} />
+          <Stars rating={5} color={theme.primary} />
           <span style={{ color: COLORS.textMuted, fontSize: 12 }}>({product.reviews?.length || 0}) • {product.sold?.toLocaleString()} sold</span>
         </div>
         <p style={{ color: COLORS.textMuted, fontSize: 13, marginBottom: 16, lineHeight: 1.5, height: 40, overflow: 'hidden' }}>{product.desc}</p>
-        {!isSoldOut && product.stock <= 15 && <div style={{ color: COLORS.accent, fontSize: 12, fontWeight: 600, marginBottom: 12 }}>🔥 ONLY {product.stock} LEFT</div>}
-        {isSoldOut && <div style={{ color: COLORS.textMuted, fontSize: 12, fontWeight: 600, marginBottom: 12 }}>📧 Notify me when back in stock</div>}
+        {isSoldOut && <div style={{ color: theme.primary, fontSize: 12, fontWeight: 600, marginBottom: 12 }}>📧 Get notified when back</div>}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <span style={{ color: isSoldOut ? COLORS.textMuted : '#fff', fontSize: 28, fontWeight: 800, fontFamily: "'Bebas Neue', sans-serif" }}>{formatPrice(product.price, country)}</span>
@@ -157,8 +204,8 @@ const ProductCard = ({ product, country, onAdd, onView }) => {
           <button 
             onClick={(e) => { e.stopPropagation(); if (!isSoldOut) onAdd(product); }} 
             disabled={isSoldOut}
-            style={{ background: isSoldOut ? COLORS.border : COLORS.accent, color: '#fff', border: 'none', borderRadius: 8, padding: '12px 20px', fontSize: 14, fontWeight: 700, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 1, cursor: isSoldOut ? 'not-allowed' : 'pointer' }}>
-            {isSoldOut ? 'SOLD OUT' : 'ADD'}
+            style={{ background: isSoldOut ? COLORS.border : theme.primary, color: '#fff', border: 'none', borderRadius: 8, padding: '12px 20px', fontSize: 14, fontWeight: 700, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 1, cursor: isSoldOut ? 'not-allowed' : 'pointer' }}>
+            {isSoldOut ? 'NOTIFY' : 'ADD'}
           </button>
         </div>
       </div>
@@ -167,74 +214,133 @@ const ProductCard = ({ product, country, onAdd, onView }) => {
 };
 
 // =============================================
-// MENS SECTION
+// CATEGORY PAGE COMPONENT
 // =============================================
-const MensSection = ({ country, onAdd, onView }) => {
-  const mensProducts = PRODUCTS.filter(p => p.cat === 'mens');
+const CategoryPage = ({ category, title, subtitle, icon, theme, country, onAdd, onView, saleEnd }) => {
+  const products = PRODUCTS.filter(p => p.cat === category);
+  
   return (
-    <section id="mens" style={{ padding: '80px 24px', background: `linear-gradient(180deg, ${COLORS.bg} 0%, #0F0F0F 100%)`, borderTop: `1px solid ${COLORS.border}`, borderBottom: `1px solid ${COLORS.border}` }}>
-      <div style={{ maxWidth: 1400, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: 50 }}>
-          <div style={{ display: 'inline-block', background: COLORS.accent, color: '#fff', padding: '6px 16px', borderRadius: 4, fontSize: 12, fontWeight: 700, letterSpacing: 2, marginBottom: 16 }}>💪 ALPHA COLLECTION</div>
-          <h2 style={{ fontSize: 56, fontWeight: 800, color: '#fff', fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 3, marginBottom: 16 }}>MEN'S BUNDLES</h2>
-          <p style={{ color: COLORS.textMuted, fontSize: 18, maxWidth: 600, margin: '0 auto' }}>Premium bundles for men who demand the best.</p>
+    <div>
+      {/* Category Hero */}
+      <section style={{ background: `linear-gradient(135deg, ${COLORS.bg} 0%, #1a1a1a 100%)`, padding: '60px 24px', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: 0, right: 0, width: '50%', height: '100%', background: `radial-gradient(circle at 70% 50%, ${theme.glow} 0%, transparent 50%)`, pointerEvents: 'none' }} />
+        <div style={{ maxWidth: 1400, margin: '0 auto', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'inline-block', background: theme.primary, color: '#fff', padding: '8px 20px', borderRadius: 50, fontSize: 14, fontWeight: 700, letterSpacing: 2, marginBottom: 20 }}>
+            {icon} {title.toUpperCase()} COLLECTION
+          </div>
+          <h1 style={{ fontSize: 'clamp(48px, 8vw, 72px)', fontWeight: 800, color: '#fff', fontFamily: "'Bebas Neue', sans-serif", lineHeight: 1, marginBottom: 16, letterSpacing: 2 }}>
+            {title.toUpperCase()} BUNDLES
+          </h1>
+          <p style={{ fontSize: 18, color: COLORS.textMuted, maxWidth: 500, marginBottom: 24, lineHeight: 1.6 }}>{subtitle}</p>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 16, background: COLORS.bgCard, border: `1px solid ${COLORS.border}`, borderRadius: 12, padding: '16px 24px' }}>
+            <div style={{ color: theme.primary, fontSize: 12, fontWeight: 700, letterSpacing: 1 }}>⚡ RESTOCK IN</div>
+            <Timer endTime={saleEnd} accentColor={theme.primary} />
+          </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 24 }}>
-          {mensProducts.map(product => <ProductCard key={product.id} product={product} country={country} onAdd={onAdd} onView={onView} />)}
+      </section>
+      
+      <TrustBar accentColor={theme.primary} />
+      
+      {/* Products Grid */}
+      <section style={{ padding: '60px 24px', background: COLORS.bg }}>
+        <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 24 }}>
+            {products.map(product => (
+              <ProductCard key={product.id} product={product} country={country} onAdd={onAdd} onView={onView} theme={theme} />
+            ))}
+          </div>
+          
+          {products.length === 0 && (
+            <div style={{ textAlign: 'center', padding: 60, color: COLORS.textMuted }}>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>📦</div>
+              <h3 style={{ color: '#fff', fontSize: 24, marginBottom: 8 }}>Coming Soon!</h3>
+              <p>New bundles are being curated. Check back soon!</p>
+            </div>
+          )}
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 };
 
 // =============================================
-// ALL PRODUCTS
+// HOME PAGE
 // =============================================
-const ProductGrid = ({ country, onAdd, onView }) => {
-  const [activeCategory, setActiveCategory] = useState('all');
-  const filtered = activeCategory === 'all' ? PRODUCTS : PRODUCTS.filter(p => p.cat === activeCategory);
+const HomePage = ({ country, onAdd, onView, saleEnd, setCurrentPage }) => {
+  const featuredProducts = PRODUCTS.slice(0, 8);
+  
   return (
-    <section id="products" style={{ padding: '60px 24px', background: COLORS.bg }}>
-      <div style={{ maxWidth: 1400, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <h2 style={{ fontSize: 48, fontWeight: 800, color: '#fff', fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2, marginBottom: 16 }}>ALL BUNDLES</h2>
-          <p style={{ color: COLORS.textMuted, fontSize: 16 }}>Premium curated bundles shipped fast from Sydney</p>
+    <div>
+      <HomeHero saleEnd={saleEnd} setCurrentPage={setCurrentPage} />
+      <TrustBar />
+      
+      {/* Featured Products */}
+      <section style={{ padding: '60px 24px', background: COLORS.bg }}>
+        <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 40 }}>
+            <h2 style={{ fontSize: 48, fontWeight: 800, color: '#fff', fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2, marginBottom: 16 }}>POPULAR BUNDLES</h2>
+            <p style={{ color: COLORS.textMuted, fontSize: 16 }}>Our most loved bundles — selling fast!</p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 24 }}>
+            {featuredProducts.map(product => {
+              const theme = product.cat === 'womens' ? COLORS.womens : product.cat === 'kids' ? COLORS.kids : product.cat === 'gifts' ? COLORS.gifts : COLORS.mens;
+              return <ProductCard key={product.id} product={product} country={country} onAdd={onAdd} onView={onView} theme={theme} />;
+            })}
+          </div>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 40, flexWrap: 'wrap' }}>
-          {SITE.categories.map(cat => (
-            <button key={cat.id} onClick={() => setActiveCategory(cat.id)}
-              style={{ background: activeCategory === cat.id ? COLORS.accent : COLORS.bgCard, color: '#fff', border: `1px solid ${activeCategory === cat.id ? COLORS.accent : COLORS.border}`, borderRadius: 50, padding: '10px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
-              {cat.label}
+      </section>
+      
+      {/* Category Showcase */}
+      <section style={{ padding: '60px 24px', background: COLORS.bgCard }}>
+        <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+          <h2 style={{ fontSize: 42, fontWeight: 800, color: '#fff', fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2, textAlign: 'center', marginBottom: 40 }}>SHOP BY CATEGORY</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24 }}>
+            <button onClick={() => setCurrentPage('mens')} style={{ background: `linear-gradient(135deg, ${COLORS.mens.primary}22 0%, ${COLORS.mens.primary}44 100%)`, border: `2px solid ${COLORS.mens.primary}`, borderRadius: 16, padding: '40px 24px', cursor: 'pointer', textAlign: 'center', transition: 'transform 0.2s' }}>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>💪</div>
+              <div style={{ color: '#fff', fontWeight: 700, fontSize: 20, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2 }}>MEN'S</div>
+              <div style={{ color: COLORS.textMuted, fontSize: 13, marginTop: 8 }}>Bundles for the modern man</div>
             </button>
-          ))}
+            <button onClick={() => setCurrentPage('womens')} style={{ background: `linear-gradient(135deg, ${COLORS.womens.primary}22 0%, ${COLORS.womens.primary}44 100%)`, border: `2px solid ${COLORS.womens.primary}`, borderRadius: 16, padding: '40px 24px', cursor: 'pointer', textAlign: 'center', transition: 'transform 0.2s' }}>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>👗</div>
+              <div style={{ color: '#fff', fontWeight: 700, fontSize: 20, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2 }}>WOMEN'S</div>
+              <div style={{ color: COLORS.textMuted, fontSize: 13, marginTop: 8 }}>Self-care & beauty essentials</div>
+            </button>
+            <button onClick={() => setCurrentPage('kids')} style={{ background: `linear-gradient(135deg, ${COLORS.kids.primary}22 0%, ${COLORS.kids.primary}44 100%)`, border: `2px solid ${COLORS.kids.primary}`, borderRadius: 16, padding: '40px 24px', cursor: 'pointer', textAlign: 'center', transition: 'transform 0.2s' }}>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>🎨</div>
+              <div style={{ color: '#fff', fontWeight: 700, fontSize: 20, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2 }}>KIDS</div>
+              <div style={{ color: COLORS.textMuted, fontSize: 13, marginTop: 8 }}>Fun & educational packs</div>
+            </button>
+            <button onClick={() => setCurrentPage('gifts')} style={{ background: `linear-gradient(135deg, ${COLORS.gifts.primary}22 0%, ${COLORS.gifts.primary}44 100%)`, border: `2px solid ${COLORS.gifts.primary}`, borderRadius: 16, padding: '40px 24px', cursor: 'pointer', textAlign: 'center', transition: 'transform 0.2s' }}>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>🎁</div>
+              <div style={{ color: '#fff', fontWeight: 700, fontSize: 20, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2 }}>GIFTS</div>
+              <div style={{ color: COLORS.textMuted, fontSize: 13, marginTop: 8 }}>Perfect for every occasion</div>
+            </button>
+          </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 24 }}>
-          {filtered.map(product => <ProductCard key={product.id} product={product} country={country} onAdd={onAdd} onView={onView} />)}
-        </div>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 };
 
 // =============================================
 // NEWSLETTER
 // =============================================
-const Newsletter = () => {
+const Newsletter = ({ accentColor = COLORS.accent }) => {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const handleSubmit = (e) => { e.preventDefault(); if (email) { setSubmitted(true); setEmail(''); } };
   return (
-    <section style={{ background: `linear-gradient(135deg, ${COLORS.accent} 0%, #FF6B2B 100%)`, padding: '60px 24px' }}>
+    <section style={{ background: `linear-gradient(135deg, ${accentColor} 0%, ${accentColor}DD 100%)`, padding: '60px 24px' }}>
       <div style={{ maxWidth: 600, margin: '0 auto', textAlign: 'center' }}>
-        <h2 style={{ fontSize: 42, fontWeight: 800, color: '#fff', fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2, marginBottom: 16 }}>JOIN THE PACK</h2>
-        <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: 16, marginBottom: 32 }}>Get exclusive deals, early access & 15% off your first order.</p>
+        <h2 style={{ fontSize: 42, fontWeight: 800, color: '#fff', fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2, marginBottom: 16 }}>GET NOTIFIED</h2>
+        <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: 16, marginBottom: 32 }}>Be the first to know when we restock. Plus get 10% off your first order!</p>
         {submitted ? (
-          <div style={{ background: 'rgba(255,255,255,0.2)', borderRadius: 12, padding: '20px 24px', color: '#fff', fontWeight: 600 }}>✓ You're in! Check your inbox for your discount code.</div>
+          <div style={{ background: 'rgba(255,255,255,0.2)', borderRadius: 12, padding: '20px 24px', color: '#fff', fontWeight: 600 }}>✓ You're on the list! We'll notify you when items are back.</div>
         ) : (
           <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 12, maxWidth: 480, margin: '0 auto' }}>
             <input type="email" placeholder="Enter your email" value={email} onChange={(e) => setEmail(e.target.value)} required
               style={{ flex: 1, background: 'rgba(255,255,255,0.2)', border: '2px solid rgba(255,255,255,0.3)', borderRadius: 8, padding: '16px 20px', color: '#fff', fontSize: 16 }} />
-            <button type="submit" style={{ background: '#fff', color: COLORS.accent, border: 'none', borderRadius: 8, padding: '16px 32px', fontSize: 16, fontWeight: 700, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 1, cursor: 'pointer' }}>SUBSCRIBE</button>
+            <button type="submit" style={{ background: '#fff', color: accentColor, border: 'none', borderRadius: 8, padding: '16px 32px', fontSize: 16, fontWeight: 700, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 1, cursor: 'pointer' }}>NOTIFY ME</button>
           </form>
         )}
       </div>
@@ -245,19 +351,19 @@ const Newsletter = () => {
 // =============================================
 // FAQ
 // =============================================
-const FAQSection = () => {
+const FAQSection = ({ accentColor = COLORS.accent }) => {
   const [openIndex, setOpenIndex] = useState(null);
   return (
     <section style={{ padding: '60px 24px', background: COLORS.bg }}>
       <div style={{ maxWidth: 800, margin: '0 auto' }}>
-        <h2 style={{ fontSize: 42, fontWeight: 800, color: '#fff', fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2, textAlign: 'center', marginBottom: 40 }}>QUESTIONS? WE GOT ANSWERS.</h2>
+        <h2 style={{ fontSize: 42, fontWeight: 800, color: '#fff', fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2, textAlign: 'center', marginBottom: 40 }}>FREQUENTLY ASKED</h2>
         <div style={{ display: 'grid', gap: 12 }}>
           {FAQ.map((item, i) => (
             <div key={i} style={{ background: COLORS.bgCard, border: `1px solid ${COLORS.border}`, borderRadius: 12, overflow: 'hidden' }}>
               <button onClick={() => setOpenIndex(openIndex === i ? null : i)}
                 style={{ width: '100%', background: 'transparent', border: 'none', padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', textAlign: 'left' }}>
                 <span style={{ color: '#fff', fontSize: 16, fontWeight: 600 }}>{item.q}</span>
-                <span style={{ color: COLORS.accent, fontSize: 24, transform: openIndex === i ? 'rotate(45deg)' : 'none', transition: 'transform 0.2s' }}>+</span>
+                <span style={{ color: accentColor, fontSize: 24, transform: openIndex === i ? 'rotate(45deg)' : 'none', transition: 'transform 0.2s' }}>+</span>
               </button>
               {openIndex === i && <div style={{ padding: '0 24px 20px', color: COLORS.textMuted, lineHeight: 1.6 }}>{item.a}</div>}
             </div>
@@ -271,7 +377,7 @@ const FAQSection = () => {
 // =============================================
 // FOOTER
 // =============================================
-const Footer = ({ onTerms, onPrivacy }) => (
+const Footer = ({ onTerms, onPrivacy, onReturns }) => (
   <footer style={{ background: COLORS.bgCard, borderTop: `1px solid ${COLORS.border}`, padding: '60px 24px 30px' }}>
     <div style={{ maxWidth: 1400, margin: '0 auto' }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 40, marginBottom: 40 }}>
@@ -284,16 +390,19 @@ const Footer = ({ onTerms, onPrivacy }) => (
         </div>
         <div>
           <h4 style={{ color: '#fff', fontSize: 14, fontWeight: 700, letterSpacing: 1, marginBottom: 16 }}>SHOP</h4>
-          {['All Bundles', "Men's Collection", 'Gift Boxes', 'Sale'].map(link => (
-            <a key={link} href="#products" style={{ display: 'block', color: COLORS.textMuted, textDecoration: 'none', fontSize: 14, marginBottom: 10 }}>{link}</a>
-          ))}
+          <div style={{ color: COLORS.textMuted, fontSize: 14, lineHeight: 2 }}>
+            <div>Men's Bundles</div>
+            <div>Women's Bundles</div>
+            <div>Kids Bundles</div>
+            <div>Gift Boxes</div>
+          </div>
         </div>
         <div>
           <h4 style={{ color: '#fff', fontSize: 14, fontWeight: 700, letterSpacing: 1, marginBottom: 16 }}>LEGAL</h4>
           <button onClick={onTerms} style={{ display: 'block', background: 'none', border: 'none', color: COLORS.textMuted, fontSize: 14, marginBottom: 10, cursor: 'pointer', padding: 0, textAlign: 'left' }}>Terms of Service</button>
           <button onClick={onPrivacy} style={{ display: 'block', background: 'none', border: 'none', color: COLORS.textMuted, fontSize: 14, marginBottom: 10, cursor: 'pointer', padding: 0, textAlign: 'left' }}>Privacy Policy</button>
-          <a href="#" style={{ display: 'block', color: COLORS.textMuted, textDecoration: 'none', fontSize: 14, marginBottom: 10 }}>Shipping Info</a>
-          <a href="#" style={{ display: 'block', color: COLORS.textMuted, textDecoration: 'none', fontSize: 14, marginBottom: 10 }}>Returns & Refunds</a>
+          <button onClick={onReturns} style={{ display: 'block', background: 'none', border: 'none', color: COLORS.textMuted, fontSize: 14, marginBottom: 10, cursor: 'pointer', padding: 0, textAlign: 'left' }}>Returns & Refunds</button>
+          <div style={{ color: COLORS.textMuted, fontSize: 14 }}>Shipping Info</div>
         </div>
         <div>
           <h4 style={{ color: '#fff', fontSize: 14, fontWeight: 700, letterSpacing: 1, marginBottom: 16 }}>CONTACT</h4>
@@ -307,7 +416,7 @@ const Footer = ({ onTerms, onPrivacy }) => (
           </div>
         </div>
       </div>
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 30, paddingBottom: 30, borderBottom: `1px solid ${COLORS.border}` }}>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 30, paddingBottom: 30, borderBottom: `1px solid ${COLORS.border}`, flexWrap: 'wrap' }}>
         {SITE.payments.map(p => <div key={p} style={{ background: COLORS.bg, padding: '8px 16px', borderRadius: 6, color: COLORS.textMuted, fontSize: 12, fontWeight: 600 }}>{p}</div>)}
       </div>
       <div style={{ textAlign: 'center', color: COLORS.textDim, fontSize: 13 }}>© {new Date().getFullYear()} {SITE.name} {SITE.tagline}. All rights reserved. Made in Australia 🇦🇺</div>
@@ -318,7 +427,7 @@ const Footer = ({ onTerms, onPrivacy }) => (
 // =============================================
 // CART DRAWER
 // =============================================
-const CartDrawer = ({ show, onClose, cart, setCart, country, onCheckout, isCheckingOut }) => {
+const CartDrawer = ({ show, onClose, cart, setCart, country, onCheckout, isCheckingOut, accentColor = COLORS.accent }) => {
   const [promoCode, setPromoCode] = useState('');
   const [appliedCode, setAppliedCode] = useState(null);
   const [promoError, setPromoError] = useState('');
@@ -352,7 +461,7 @@ const CartDrawer = ({ show, onClose, cart, setCart, country, onCheckout, isCheck
           <div style={{ padding: '16px 20px', borderBottom: `1px solid ${COLORS.border}` }}>
             <div style={{ color: COLORS.textMuted, fontSize: 13, marginBottom: 8 }}>Add {formatPrice(SITE.shipping.freeThreshold - subtotal, country)} more for FREE SHIPPING!</div>
             <div style={{ background: COLORS.border, borderRadius: 10, height: 8, overflow: 'hidden' }}>
-              <div style={{ background: COLORS.accent, height: '100%', width: `${Math.min((subtotal / SITE.shipping.freeThreshold) * 100, 100)}%` }} />
+              <div style={{ background: accentColor, height: '100%', width: `${Math.min((subtotal / SITE.shipping.freeThreshold) * 100, 100)}%` }} />
             </div>
           </div>
         )}
@@ -364,7 +473,7 @@ const CartDrawer = ({ show, onClose, cart, setCart, country, onCheckout, isCheck
               <img src={item.img} alt={item.name} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 8 }} />
               <div style={{ flex: 1 }}>
                 <h4 style={{ color: '#fff', fontSize: 14, marginBottom: 4 }}>{item.name}</h4>
-                <div style={{ color: COLORS.accent, fontWeight: 700 }}>{formatPrice(item.price, country)}</div>
+                <div style={{ color: accentColor, fontWeight: 700 }}>{formatPrice(item.price, country)}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8 }}>
                   <button onClick={() => updateQty(item.id, -1)} style={{ background: COLORS.border, border: 'none', color: '#fff', width: 28, height: 28, borderRadius: 4, cursor: 'pointer' }}>−</button>
                   <span style={{ color: '#fff' }}>{item.qty}</span>
@@ -389,10 +498,13 @@ const CartDrawer = ({ show, onClose, cart, setCart, country, onCheckout, isCheck
               <div style={{ display: 'flex', justifyContent: 'space-between', color: COLORS.textMuted, fontSize: 14, marginBottom: 8 }}><span>Shipping</span><span style={{ color: freeShipping ? COLORS.success : undefined }}>{freeShipping ? 'FREE' : formatPrice(shipping, country)}</span></div>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: '#fff', fontSize: 18, fontWeight: 700, paddingTop: 12, borderTop: `1px solid ${COLORS.border}` }}><span>Total</span><span>{formatPrice(total, country)}</span></div>
             </div>
-            <button onClick={onCheckout} disabled={isCheckingOut} style={{ width: '100%', background: isCheckingOut ? COLORS.border : `linear-gradient(135deg, ${COLORS.accent} 0%, #FF6B2B 100%)`, color: '#fff', border: 'none', borderRadius: 8, padding: '16px', fontSize: 18, fontWeight: 700, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2, cursor: isCheckingOut ? 'wait' : 'pointer', boxShadow: isCheckingOut ? 'none' : `0 4px 20px ${COLORS.accentGlow}` }}>
+            <button onClick={onCheckout} disabled={isCheckingOut} style={{ width: '100%', background: isCheckingOut ? COLORS.border : `linear-gradient(135deg, ${accentColor} 0%, ${accentColor}DD 100%)`, color: '#fff', border: 'none', borderRadius: 8, padding: '16px', fontSize: 18, fontWeight: 700, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2, cursor: isCheckingOut ? 'wait' : 'pointer' }}>
               {isCheckingOut ? 'REDIRECTING...' : 'CHECKOUT →'}
             </button>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 16, color: COLORS.textMuted, fontSize: 12 }}><span>🔒 Secure</span><span>💳 Afterpay</span><span>↩️ 30-Day Returns</span></div>
+            <div style={{ textAlign: 'center', marginTop: 12, padding: '12px', background: 'rgba(139, 92, 246, 0.1)', borderRadius: 8, border: '1px solid rgba(139, 92, 246, 0.3)' }}>
+              <span style={{ color: '#8B5CF6', fontSize: 13, fontWeight: 600 }}>💳 Pay in 4 with Afterpay</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 12, color: COLORS.textMuted, fontSize: 12 }}><span>🔒 Secure</span><span>↩️ 30-Day Returns</span></div>
           </div>
         )}
       </div>
@@ -403,7 +515,7 @@ const CartDrawer = ({ show, onClose, cart, setCart, country, onCheckout, isCheck
 // =============================================
 // PRODUCT MODAL
 // =============================================
-const ProductModal = ({ product, show, onClose, country, onAdd }) => {
+const ProductModal = ({ product, show, onClose, country, onAdd, theme = COLORS.mens }) => {
   const [qty, setQty] = useState(1);
   const [viewers] = useState(randomInRange(12, 89));
   const [notifyEmail, setNotifyEmail] = useState('');
@@ -419,8 +531,8 @@ const ProductModal = ({ product, show, onClose, country, onAdd }) => {
         <button onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, background: COLORS.bg, border: 'none', color: '#fff', width: 40, height: 40, borderRadius: '50%', fontSize: 24, cursor: 'pointer', zIndex: 10 }}>×</button>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
           <div style={{ position: 'relative' }}>
-            <img src={product.img} alt={product.name} style={{ width: '100%', height: '100%', minHeight: 400, objectFit: 'cover', borderRadius: '16px 0 0 16px', filter: isSoldOut ? 'grayscale(50%)' : 'none' }} />
-            <div style={{ position: 'absolute', top: 16, left: 16, background: isSoldOut ? '#555' : product.tagBg, color: '#fff', padding: '8px 16px', borderRadius: 6, fontSize: 12, fontWeight: 700, letterSpacing: 1 }}>{isSoldOut ? 'SOLD OUT' : product.tag}</div>
+            <img src={product.img} alt={product.name} style={{ width: '100%', height: '100%', minHeight: 400, objectFit: 'cover', borderRadius: '16px 0 0 16px', filter: isSoldOut ? 'grayscale(40%)' : 'none' }} />
+            <div style={{ position: 'absolute', top: 16, left: 16, background: isSoldOut ? '#555' : theme.primary, color: '#fff', padding: '8px 16px', borderRadius: 6, fontSize: 12, fontWeight: 700, letterSpacing: 1 }}>{isSoldOut ? 'SOLD OUT' : `${getDiscount(product.price, product.was)}% OFF`}</div>
             {isSoldOut && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '16px 0 0 16px' }}>
               <span style={{ background: '#000', color: '#fff', padding: '16px 32px', borderRadius: 8, fontSize: 20, fontWeight: 700, letterSpacing: 2 }}>SOLD OUT</span>
             </div>}
@@ -433,7 +545,7 @@ const ProductModal = ({ product, show, onClose, country, onAdd }) => {
               <span style={{ color: '#fff', fontSize: 13, fontWeight: 600 }}>Currently Unavailable</span>
             </div>}
             <h2 style={{ color: '#fff', fontSize: 32, fontWeight: 800, fontFamily: "'Bebas Neue', sans-serif", marginBottom: 12 }}>{product.name}</h2>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}><Stars rating={5} /><span style={{ color: COLORS.textMuted }}>({product.reviews?.length || 0} reviews) • {product.sold?.toLocaleString()} sold</span></div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}><Stars rating={5} color={theme.primary} /><span style={{ color: COLORS.textMuted }}>({product.reviews?.length || 0} reviews) • {product.sold?.toLocaleString()} sold</span></div>
             <p style={{ color: COLORS.textMuted, fontSize: 15, lineHeight: 1.6, marginBottom: 24 }}>{product.desc}</p>
             <div style={{ marginBottom: 24 }}>
               <span style={{ color: isSoldOut ? COLORS.textMuted : '#fff', fontSize: 42, fontWeight: 800, fontFamily: "'Bebas Neue', sans-serif" }}>{formatPrice(product.price, country)}</span>
@@ -443,7 +555,7 @@ const ProductModal = ({ product, show, onClose, country, onAdd }) => {
             
             {isSoldOut ? (
               <div>
-                <div style={{ background: 'rgba(255, 77, 0, 0.1)', border: `1px solid ${COLORS.accent}`, borderRadius: 8, padding: '16px', marginBottom: 24, textAlign: 'center' }}>
+                <div style={{ background: `${theme.primary}22`, border: `1px solid ${theme.primary}`, borderRadius: 8, padding: '16px', marginBottom: 24, textAlign: 'center' }}>
                   <div style={{ color: '#fff', fontWeight: 600, marginBottom: 8 }}>🔔 Get notified when back in stock</div>
                   {notified ? (
                     <div style={{ color: COLORS.success, fontWeight: 600 }}>✓ We'll email you when it's available!</div>
@@ -451,7 +563,7 @@ const ProductModal = ({ product, show, onClose, country, onAdd }) => {
                     <div style={{ display: 'flex', gap: 8 }}>
                       <input type="email" placeholder="Enter your email" value={notifyEmail} onChange={(e) => setNotifyEmail(e.target.value)}
                         style={{ flex: 1, background: COLORS.bg, border: `1px solid ${COLORS.border}`, borderRadius: 6, padding: '10px 12px', color: '#fff', fontSize: 14 }} />
-                      <button onClick={() => { if (notifyEmail) setNotified(true); }} style={{ background: COLORS.accent, color: '#fff', border: 'none', borderRadius: 6, padding: '10px 16px', fontWeight: 600, cursor: 'pointer' }}>NOTIFY ME</button>
+                      <button onClick={() => { if (notifyEmail) setNotified(true); }} style={{ background: theme.primary, color: '#fff', border: 'none', borderRadius: 6, padding: '10px 16px', fontWeight: 600, cursor: 'pointer' }}>NOTIFY ME</button>
                     </div>
                   )}
                 </div>
@@ -459,7 +571,7 @@ const ProductModal = ({ product, show, onClose, country, onAdd }) => {
               </div>
             ) : (
               <>
-                {product.stock <= 15 && <div style={{ background: 'rgba(255, 77, 0, 0.1)', border: `1px solid ${COLORS.accent}`, borderRadius: 8, padding: '12px 16px', marginBottom: 24, color: COLORS.accent, fontWeight: 600 }}>🔥 Only {product.stock} left in stock!</div>}
+                {product.stock <= 15 && product.stock > 0 && <div style={{ background: `${theme.primary}22`, border: `1px solid ${theme.primary}`, borderRadius: 8, padding: '12px 16px', marginBottom: 24, color: theme.primary, fontWeight: 600 }}>🔥 Only {product.stock} left in stock!</div>}
                 <div style={{ marginBottom: 24 }}>
                   <label style={{ color: COLORS.textMuted, fontSize: 12, fontWeight: 600, letterSpacing: 1, display: 'block', marginBottom: 8 }}>QUANTITY</label>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -469,9 +581,12 @@ const ProductModal = ({ product, show, onClose, country, onAdd }) => {
                   </div>
                 </div>
                 <button onClick={() => { for (let i = 0; i < qty; i++) onAdd(product); onClose(); }}
-                  style={{ width: '100%', background: `linear-gradient(135deg, ${COLORS.accent} 0%, #FF6B2B 100%)`, color: '#fff', border: 'none', borderRadius: 8, padding: '18px', fontSize: 18, fontWeight: 700, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2, cursor: 'pointer', boxShadow: `0 4px 20px ${COLORS.accentGlow}`, marginBottom: 16 }}>
+                  style={{ width: '100%', background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.secondary} 100%)`, color: '#fff', border: 'none', borderRadius: 8, padding: '18px', fontSize: 18, fontWeight: 700, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2, cursor: 'pointer', boxShadow: `0 4px 20px ${theme.glow}`, marginBottom: 12 }}>
                   ADD TO CART - {formatPrice(product.price * qty, country)}
                 </button>
+                <div style={{ textAlign: 'center', padding: '12px', background: 'rgba(139, 92, 246, 0.1)', borderRadius: 8, border: '1px solid rgba(139, 92, 246, 0.3)', marginBottom: 16 }}>
+                  <span style={{ color: '#8B5CF6', fontSize: 13, fontWeight: 600 }}>💳 Or 4 payments of {formatPrice(product.price * qty / 4, country)} with Afterpay</span>
+                </div>
                 <div style={{ display: 'flex', justifyContent: 'center', gap: 20, color: COLORS.textMuted, fontSize: 12 }}><span>🚀 Fast Shipping</span><span>↩️ 30-Day Returns</span><span>🔒 Secure</span></div>
               </>
             )}
@@ -518,16 +633,15 @@ const TermsModal = ({ show, onClose }) => {
         <button onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, background: 'transparent', border: 'none', color: COLORS.textMuted, fontSize: 28, cursor: 'pointer' }}>×</button>
         <h2 style={{ color: '#fff', fontSize: 28, fontFamily: "'Bebas Neue', sans-serif", marginBottom: 24, letterSpacing: 2 }}>TERMS OF SERVICE</h2>
         <div style={{ color: COLORS.textMuted, fontSize: 14, lineHeight: 1.8 }}>
-          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>1. Agreement to Terms</strong><br/>By accessing ARK Global Supply ("we," "us," or "our"), you agree to be bound by these Terms of Service. If you disagree with any part of these terms, please do not use our website.</p>
-          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>2. Products & Pricing</strong><br/>All prices are displayed in Australian Dollars (AUD) unless otherwise stated. We reserve the right to modify prices at any time without prior notice. Product images are for illustration purposes; actual items may vary slightly in appearance.</p>
-          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>3. Orders & Payment</strong><br/>All orders are subject to product availability. Payment is processed securely via Stripe. We accept Visa, Mastercard, American Express, PayPal, Afterpay, and Zip. By placing an order, you warrant that you are legally capable of entering into binding contracts.</p>
-          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>4. Shipping & Delivery</strong><br/>We ship within Australia and to select international destinations. Estimated delivery times are provided as a guide only and are not guaranteed. ARK Global Supply is not liable for any delays caused by shipping carriers, customs, or circumstances beyond our control.</p>
-          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>5. Returns & Refunds</strong><br/>We offer a 30-day money-back guarantee on unused items in their original packaging. To initiate a return, please contact support@arkglobalsupply.com. Refunds will be processed within 5-10 business days after we receive the returned item. Shipping costs for returns are the responsibility of the customer unless the item is faulty or incorrect.</p>
-          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>6. Intellectual Property</strong><br/>All content on this website, including text, graphics, logos, images, and software, is the property of ARK Global Supply and is protected by Australian and international copyright laws.</p>
-          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>7. Limitation of Liability</strong><br/>To the fullest extent permitted by law, ARK Global Supply shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising out of your use of our products or website.</p>
-          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>8. Governing Law</strong><br/>These Terms of Service are governed by and construed in accordance with the laws of New South Wales, Australia. Any disputes shall be subject to the exclusive jurisdiction of the courts of New South Wales.</p>
-          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>9. Changes to Terms</strong><br/>We reserve the right to update these terms at any time. Changes will be effective immediately upon posting to the website. Your continued use of the website constitutes acceptance of the revised terms.</p>
-          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>10. Contact Us</strong><br/>If you have any questions about these Terms of Service, please contact us at support@arkglobalsupply.com</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>1. Agreement to Terms</strong><br/>By accessing ARK Global Supply ("we," "us," or "our"), you agree to be bound by these Terms of Service. If you disagree with any part, please do not use our website.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>2. Products & Pricing</strong><br/>All prices are displayed in Australian Dollars (AUD) unless otherwise stated. Prices may change without notice. Product images are for illustration; actual items may vary.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>3. Orders & Payment</strong><br/>Orders are subject to availability. Payment is processed securely via Stripe. We accept Visa, Mastercard, American Express, PayPal, Afterpay, and Zip.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>4. Afterpay</strong><br/>Afterpay allows you to pay in 4 interest-free installments. Afterpay's terms and conditions apply. You must be 18+ and an Australian resident.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>5. Shipping</strong><br/>We ship within Australia and select international destinations. Estimated delivery times are guides only. We are not liable for carrier delays.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>6. Returns</strong><br/>We offer a 30-day money-back guarantee on unused items in original packaging. See our Returns Policy for details.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>7. Limitation of Liability</strong><br/>ARK Global Supply shall not be liable for any indirect, incidental, or consequential damages arising from use of our products or website.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>8. Governing Law</strong><br/>These terms are governed by the laws of New South Wales, Australia.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>9. Contact</strong><br/>Questions? Email {SITE.business.email}</p>
           <p style={{ color: COLORS.textDim, marginTop: 24, paddingTop: 16, borderTop: `1px solid ${COLORS.border}` }}>Last updated: December 2024</p>
         </div>
       </div>
@@ -544,27 +658,70 @@ const PrivacyModal = ({ show, onClose }) => {
         <button onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, background: 'transparent', border: 'none', color: COLORS.textMuted, fontSize: 28, cursor: 'pointer' }}>×</button>
         <h2 style={{ color: '#fff', fontSize: 28, fontFamily: "'Bebas Neue', sans-serif", marginBottom: 24, letterSpacing: 2 }}>PRIVACY POLICY</h2>
         <div style={{ color: COLORS.textMuted, fontSize: 14, lineHeight: 1.8 }}>
-          <p style={{ marginBottom: 16 }}>ARK Global Supply ("we," "us," or "our") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website.</p>
+          <p style={{ marginBottom: 16 }}>ARK Global Supply is committed to protecting your privacy. This policy explains how we collect, use, and safeguard your information.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Information We Collect</strong><br/>Name, email, shipping address, phone number, payment information, and browsing data via cookies.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>How We Use Your Information</strong><br/>Process orders, send confirmations and shipping updates, improve our services, and send marketing emails (with consent).</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Information Sharing</strong><br/>We do not sell your data. We share information only with: Stripe (payments), Afterpay (buy-now-pay-later), shipping carriers, and analytics providers.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Data Security</strong><br/>We use SSL encryption. Payment data is handled by Stripe/Afterpay and never stored on our servers.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Your Rights</strong><br/>You can access, correct, or delete your data. Contact us to exercise these rights.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Contact</strong><br/>Privacy questions? Email {SITE.business.email}</p>
+          <p style={{ color: COLORS.textDim, marginTop: 24, paddingTop: 16, borderTop: `1px solid ${COLORS.border}` }}>Last updated: December 2024</p>
+        </div>
+      </div>
+    </>
+  );
+};
+
+const ReturnsModal = ({ show, onClose }) => {
+  if (!show) return null;
+  return (
+    <>
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 500 }} />
+      <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: COLORS.bgCard, borderRadius: 16, maxWidth: 700, width: '90%', maxHeight: '80vh', overflow: 'auto', zIndex: 501, border: `1px solid ${COLORS.border}`, padding: 32 }}>
+        <button onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, background: 'transparent', border: 'none', color: COLORS.textMuted, fontSize: 28, cursor: 'pointer' }}>×</button>
+        <h2 style={{ color: '#fff', fontSize: 28, fontFamily: "'Bebas Neue', sans-serif", marginBottom: 24, letterSpacing: 2 }}>RETURNS & REFUNDS</h2>
+        <div style={{ color: COLORS.textMuted, fontSize: 14, lineHeight: 1.8 }}>
+          <div style={{ background: COLORS.success + '22', border: `1px solid ${COLORS.success}`, borderRadius: 8, padding: 16, marginBottom: 24, textAlign: 'center' }}>
+            <span style={{ color: COLORS.success, fontWeight: 700, fontSize: 16 }}>✓ 30-DAY MONEY-BACK GUARANTEE</span>
+          </div>
           
-          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Information We Collect</strong><br/>We may collect personal information that you voluntarily provide, including: name, email address, shipping address, phone number, and payment information. We also automatically collect certain information when you visit our website, including IP address, browser type, device information, and browsing behavior through cookies.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Our Promise</strong><br/>We want you to love your bundle! If you're not completely satisfied, we'll make it right.</p>
           
-          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>How We Use Your Information</strong><br/>We use the information we collect to: process and fulfill your orders, send order confirmations and shipping updates, communicate with you about products, services, and promotions, improve our website and customer service, comply with legal obligations, and prevent fraud.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Eligibility for Returns</strong><br/>
+          • Items must be returned within 30 days of delivery<br/>
+          • Items must be unused and in original packaging<br/>
+          • Items must include all original contents and tags<br/>
+          • Proof of purchase is required</p>
           
-          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Information Sharing</strong><br/>We do not sell, trade, or rent your personal information to third parties. We may share your information with: payment processors (Stripe) to complete transactions, shipping carriers to deliver your orders, analytics providers (Google Analytics) to understand website usage, and law enforcement when required by law.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Non-Returnable Items</strong><br/>
+          • Opened skincare, cosmetics, or hygiene products<br/>
+          • Personalized or custom items<br/>
+          • Perishable goods (food, chocolates)<br/>
+          • Items marked as "Final Sale"</p>
           
-          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Data Security</strong><br/>We implement appropriate technical and organizational measures to protect your personal information. All payment transactions are processed through Stripe using SSL encryption. We do not store credit card details on our servers.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>How to Return</strong><br/>
+          1. Email {SITE.business.email} with your order number<br/>
+          2. We'll send you a return authorization and instructions<br/>
+          3. Package items securely and ship to provided address<br/>
+          4. Refund processed within 5-10 business days of receiving return</p>
           
-          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Cookies</strong><br/>We use cookies to enhance your browsing experience, analyze website traffic, and personalize content. You can control cookie settings through your browser preferences. Disabling cookies may affect website functionality.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Refund Method</strong><br/>
+          Refunds are issued to the original payment method. Afterpay orders will be refunded according to Afterpay's policy.</p>
           
-          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Your Rights</strong><br/>Under Australian Privacy Law, you have the right to: access the personal information we hold about you, request correction of inaccurate information, request deletion of your information, opt out of marketing communications, and lodge a complaint with the Office of the Australian Information Commissioner (OAIC).</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Shipping Costs</strong><br/>
+          • Return shipping costs are the customer's responsibility<br/>
+          • Original shipping charges are non-refundable<br/>
+          • If item is faulty or incorrect, we'll cover return shipping</p>
           
-          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Marketing Communications</strong><br/>With your consent, we may send you promotional emails about new products, special offers, and other information we think you may find interesting. You can opt out at any time by clicking the "unsubscribe" link in any marketing email.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Damaged or Faulty Items</strong><br/>
+          Contact us within 48 hours of delivery with photos. We'll arrange a replacement or full refund including shipping.</p>
           
-          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Data Retention</strong><br/>We retain your personal information for as long as necessary to fulfill the purposes outlined in this policy, unless a longer retention period is required by law.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Exchanges</strong><br/>
+          We don't offer direct exchanges. Please return your item for a refund and place a new order.</p>
           
-          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Changes to This Policy</strong><br/>We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.</p>
-          
-          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Contact Us</strong><br/>If you have questions about this Privacy Policy or wish to exercise your rights, please contact us at:<br/>Email: support@arkglobalsupply.com<br/>Location: Sydney, NSW, Australia</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Contact Us</strong><br/>
+          Questions about returns? Email {SITE.business.email}<br/>
+          We aim to respond within 24 hours.</p>
           
           <p style={{ color: COLORS.textDim, marginTop: 24, paddingTop: 16, borderTop: `1px solid ${COLORS.border}` }}>Last updated: December 2024</p>
         </div>
@@ -583,13 +740,13 @@ const ExitIntent = ({ show, onClose }) => {
       <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 400 }} />
       <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: COLORS.bgCard, borderRadius: 16, maxWidth: 450, width: '90%', padding: 40, textAlign: 'center', zIndex: 401, border: `2px solid ${COLORS.accent}`, boxShadow: `0 0 60px ${COLORS.accentGlow}` }}>
         <button onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, background: 'transparent', border: 'none', color: COLORS.textMuted, fontSize: 28, cursor: 'pointer' }}>×</button>
-        <div style={{ fontSize: 60, marginBottom: 20 }}>🔥</div>
-        <h2 style={{ fontSize: 36, fontWeight: 800, color: '#fff', fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2, marginBottom: 12 }}>WAIT, DON'T LEAVE!</h2>
-        <p style={{ color: COLORS.textMuted, fontSize: 16, marginBottom: 24 }}>Here's 20% off your first order:</p>
+        <div style={{ fontSize: 60, marginBottom: 20 }}>🔔</div>
+        <h2 style={{ fontSize: 36, fontWeight: 800, color: '#fff', fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2, marginBottom: 12 }}>DON'T MISS OUT!</h2>
+        <p style={{ color: COLORS.textMuted, fontSize: 16, marginBottom: 24 }}>Get 10% off when we restock:</p>
         <div style={{ background: COLORS.bg, border: `2px dashed ${COLORS.accent}`, borderRadius: 8, padding: '16px 24px', marginBottom: 24 }}>
-          <span style={{ color: COLORS.accent, fontSize: 28, fontWeight: 800, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 4 }}>ALPHA20</span>
+          <span style={{ color: COLORS.accent, fontSize: 28, fontWeight: 800, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 4 }}>SAVE10</span>
         </div>
-        <button onClick={onClose} style={{ width: '100%', background: `linear-gradient(135deg, ${COLORS.accent} 0%, #FF6B2B 100%)`, color: '#fff', border: 'none', borderRadius: 8, padding: '16px', fontSize: 18, fontWeight: 700, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2, cursor: 'pointer' }}>CLAIM MY 20% OFF</button>
+        <button onClick={onClose} style={{ width: '100%', background: `linear-gradient(135deg, ${COLORS.accent} 0%, #FF6B2B 100%)`, color: '#fff', border: 'none', borderRadius: 8, padding: '16px', fontSize: 18, fontWeight: 700, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2, cursor: 'pointer' }}>GOT IT!</button>
       </div>
     </>
   );
@@ -615,27 +772,10 @@ const Notification = ({ show, message }) => {
 };
 
 // =============================================
-// SUCCESS/CANCEL BANNERS
-// =============================================
-const SuccessBanner = ({ onClose }) => (
-  <div style={{ background: COLORS.success, color: '#000', padding: '16px 24px', textAlign: 'center', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12 }}>
-    <span>🎉 Order confirmed! Check your email for receipt and shipping updates.</span>
-    <button onClick={onClose} style={{ background: 'transparent', border: 'none', fontSize: 20, cursor: 'pointer' }}>×</button>
-  </div>
-);
-
-const CancelBanner = ({ onClose }) => (
-  <div style={{ background: COLORS.error, color: '#fff', padding: '16px 24px', textAlign: 'center', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12 }}>
-    <span>Order canceled. Your cart is still saved!</span>
-    <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: 20, cursor: 'pointer' }}>×</button>
-  </div>
-);
-
-// =============================================
 // MAIN APP
 // =============================================
 const App = () => {
-  // State
+  const [currentPage, setCurrentPage] = useState('home');
   const [cart, setCart] = useState(() => { try { return JSON.parse(localStorage.getItem('ark-cart')) || []; } catch { return []; } });
   const [country, setCountry] = useState(() => { try { return JSON.parse(localStorage.getItem('ark-country')) || COUNTRIES.AU; } catch { return COUNTRIES.AU; } });
   const [showCart, setShowCart] = useState(false);
@@ -646,30 +786,29 @@ const App = () => {
   const [exitIntentShown, setExitIntentShown] = useState(false);
   const [socialProof, setSocialProof] = useState(null);
   const [notification, setNotification] = useState(null);
-  const [saleEnd] = useState(() => Date.now() + 24 * 60 * 60 * 1000);
+  const [saleEnd] = useState(() => Date.now() + 3 * 24 * 60 * 60 * 1000); // 3 days
   const [isCheckingOut, setIsCheckingOut] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [showCancel, setShowCancel] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showReturns, setShowReturns] = useState(false);
 
-  // Check URL for success/cancel
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('success') === 'true') {
-      setShowSuccess(true);
-      setCart([]);
-      window.history.replaceState({}, '', window.location.pathname);
+  // Get current page theme
+  const getPageTheme = () => {
+    switch(currentPage) {
+      case 'womens': return COLORS.womens;
+      case 'kids': return COLORS.kids;
+      case 'gifts': return COLORS.gifts;
+      case 'mens': return COLORS.mens;
+      default: return COLORS.mens;
     }
-    if (params.get('canceled') === 'true') {
-      setShowCancel(true);
-      window.history.replaceState({}, '', window.location.pathname);
-    }
-  }, []);
+  };
 
   // Persist cart & country
   useEffect(() => { localStorage.setItem('ark-cart', JSON.stringify(cart)); }, [cart]);
   useEffect(() => { localStorage.setItem('ark-country', JSON.stringify(country)); }, [country]);
+
+  // Scroll to top on page change
+  useEffect(() => { window.scrollTo(0, 0); }, [currentPage]);
 
   // Add to cart
   const handleAddToCart = (product) => {
@@ -719,27 +858,52 @@ const App = () => {
     return () => { clearTimeout(initial); clearInterval(interval); };
   }, []);
 
+  // Render current page
+  const renderPage = () => {
+    switch(currentPage) {
+      case 'mens':
+        return <CategoryPage category="mens" title="Men's" subtitle="Premium bundles for the modern man. Grooming, fitness, tech & lifestyle essentials." icon="💪" theme={COLORS.mens} country={country} onAdd={handleAddToCart} onView={handleViewDetails} saleEnd={saleEnd} />;
+      case 'womens':
+        return <CategoryPage category="womens" title="Women's" subtitle="Self-care, beauty & wellness essentials. Treat yourself to something special." icon="👗" theme={COLORS.womens} country={country} onAdd={handleAddToCart} onView={handleViewDetails} saleEnd={saleEnd} />;
+      case 'kids':
+        return <CategoryPage category="kids" title="Kids" subtitle="Fun, educational & creative bundles for little ones. Learning through play!" icon="🎨" theme={COLORS.kids} country={country} onAdd={handleAddToCart} onView={handleViewDetails} saleEnd={saleEnd} />;
+      case 'gifts':
+        return <CategoryPage category="gifts" title="Gifts" subtitle="Perfect presents for every occasion. Beautifully packaged & ready to give." icon="🎁" theme={COLORS.gifts} country={country} onAdd={handleAddToCart} onView={handleViewDetails} saleEnd={saleEnd} />;
+      default:
+        return <HomePage country={country} onAdd={handleAddToCart} onView={handleViewDetails} saleEnd={saleEnd} setCurrentPage={setCurrentPage} />;
+    }
+  };
+
+  // Get product theme for modal
+  const getProductTheme = () => {
+    if (!selectedProduct) return COLORS.mens;
+    switch(selectedProduct.cat) {
+      case 'womens': return COLORS.womens;
+      case 'kids': return COLORS.kids;
+      case 'gifts': return COLORS.gifts;
+      default: return COLORS.mens;
+    }
+  };
+
   return (
     <div style={{ minHeight: '100vh', background: COLORS.bg, fontFamily: "'Inter', sans-serif" }}>
-      {showSuccess && <SuccessBanner onClose={() => setShowSuccess(false)} />}
-      {showCancel && <CancelBanner onClose={() => setShowCancel(false)} />}
-      <Header cart={cart} setShowCart={setShowCart} country={country} setShowCountry={setShowCountry} />
-      <Hero saleEnd={saleEnd} />
-      <TrustBar />
-      <MensSection country={country} onAdd={handleAddToCart} onView={handleViewDetails} />
-      <ProductGrid country={country} onAdd={handleAddToCart} onView={handleViewDetails} />
-      <Newsletter />
-      <FAQSection />
-      <Footer onTerms={() => setShowTerms(true)} onPrivacy={() => setShowPrivacy(true)} />
+      <Header cart={cart} setShowCart={setShowCart} country={country} setShowCountry={setShowCountry} currentPage={currentPage} setCurrentPage={setCurrentPage} />
       
-      <CartDrawer show={showCart} onClose={() => setShowCart(false)} cart={cart} setCart={setCart} country={country} onCheckout={handleCheckout} isCheckingOut={isCheckingOut} />
-      <ProductModal product={selectedProduct} show={showProductModal} onClose={() => setShowProductModal(false)} country={country} onAdd={handleAddToCart} />
+      {renderPage()}
+      
+      <Newsletter accentColor={getPageTheme().primary} />
+      <FAQSection accentColor={getPageTheme().primary} />
+      <Footer onTerms={() => setShowTerms(true)} onPrivacy={() => setShowPrivacy(true)} onReturns={() => setShowReturns(true)} />
+      
+      <CartDrawer show={showCart} onClose={() => setShowCart(false)} cart={cart} setCart={setCart} country={country} onCheckout={handleCheckout} isCheckingOut={isCheckingOut} accentColor={getPageTheme().primary} />
+      <ProductModal product={selectedProduct} show={showProductModal} onClose={() => setShowProductModal(false)} country={country} onAdd={handleAddToCart} theme={getProductTheme()} />
       <CountrySelector show={showCountry} onClose={() => setShowCountry(false)} country={country} setCountry={setCountry} />
       <ExitIntent show={showExitIntent} onClose={() => setShowExitIntent(false)} />
       <SocialProofPopup show={!!socialProof} data={socialProof} />
       <Notification show={!!notification} message={notification} />
       <TermsModal show={showTerms} onClose={() => setShowTerms(false)} />
       <PrivacyModal show={showPrivacy} onClose={() => setShowPrivacy(false)} />
+      <ReturnsModal show={showReturns} onClose={() => setShowReturns(false)} />
 
       <style>{`
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -749,7 +913,9 @@ const App = () => {
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: ${COLORS.bg}; }
         ::-webkit-scrollbar-thumb { background: ${COLORS.border}; border-radius: 4px; }
-        @media (max-width: 768px) { nav { display: none !important; } }
+        @media (max-width: 900px) {
+          nav { display: none !important; }
+        }
       `}</style>
     </div>
   );
