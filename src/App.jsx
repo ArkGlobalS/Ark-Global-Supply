@@ -124,16 +124,21 @@ const TrustBar = () => (
 const ProductCard = ({ product, country, onAdd, onView }) => {
   const [hover, setHover] = useState(false);
   const [viewers] = useState(randomInRange(12, 89));
+  const isSoldOut = product.stock === 0;
+  
   return (
     <div onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} onClick={() => onView(product)}
-      style={{ background: COLORS.bgCard, borderRadius: 16, overflow: 'hidden', border: `2px solid ${hover ? COLORS.accent : COLORS.border}`, transition: 'all 0.3s ease', cursor: 'pointer', transform: hover ? 'translateY(-4px)' : 'none', boxShadow: hover ? `0 8px 30px ${COLORS.accentGlow}` : 'none' }}>
+      style={{ background: COLORS.bgCard, borderRadius: 16, overflow: 'hidden', border: `2px solid ${hover && !isSoldOut ? COLORS.accent : COLORS.border}`, transition: 'all 0.3s ease', cursor: 'pointer', transform: hover && !isSoldOut ? 'translateY(-4px)' : 'none', boxShadow: hover && !isSoldOut ? `0 8px 30px ${COLORS.accentGlow}` : 'none', opacity: isSoldOut ? 0.7 : 1 }}>
       <div style={{ position: 'relative' }}>
-        <img src={product.img} alt={product.name} style={{ width: '100%', height: 220, objectFit: 'cover' }} />
-        <div style={{ position: 'absolute', top: 12, left: 12, background: product.tagBg, color: '#fff', padding: '6px 12px', borderRadius: 6, fontSize: 11, fontWeight: 700, letterSpacing: 1 }}>{product.tag}</div>
-        <div style={{ position: 'absolute', top: 12, right: 12, background: COLORS.bg, color: COLORS.accent, padding: '6px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700 }}>-{getDiscount(product.price, product.was)}%</div>
-        <div style={{ position: 'absolute', bottom: 12, left: 12, background: 'rgba(0,0,0,0.8)', color: '#fff', padding: '6px 10px', borderRadius: 6, fontSize: 11, display: 'flex', alignItems: 'center', gap: 6 }}>
+        <img src={product.img} alt={product.name} style={{ width: '100%', height: 220, objectFit: 'cover', filter: isSoldOut ? 'grayscale(50%)' : 'none' }} />
+        <div style={{ position: 'absolute', top: 12, left: 12, background: isSoldOut ? '#555555' : product.tagBg, color: '#fff', padding: '6px 12px', borderRadius: 6, fontSize: 11, fontWeight: 700, letterSpacing: 1 }}>{isSoldOut ? 'SOLD OUT' : product.tag}</div>
+        {!isSoldOut && <div style={{ position: 'absolute', top: 12, right: 12, background: COLORS.bg, color: COLORS.accent, padding: '6px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700 }}>-{getDiscount(product.price, product.was)}%</div>}
+        {isSoldOut && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ background: '#000', color: '#fff', padding: '12px 24px', borderRadius: 8, fontSize: 16, fontWeight: 700, letterSpacing: 2 }}>SOLD OUT</span>
+        </div>}
+        {!isSoldOut && <div style={{ position: 'absolute', bottom: 12, left: 12, background: 'rgba(0,0,0,0.8)', color: '#fff', padding: '6px 10px', borderRadius: 6, fontSize: 11, display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ width: 8, height: 8, background: COLORS.success, borderRadius: '50%' }} />{viewers} viewing
-        </div>
+        </div>}
       </div>
       <div style={{ padding: 20 }}>
         <h3 style={{ color: '#fff', fontSize: 18, fontWeight: 700, marginBottom: 8, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 1 }}>{product.name}</h3>
@@ -142,13 +147,19 @@ const ProductCard = ({ product, country, onAdd, onView }) => {
           <span style={{ color: COLORS.textMuted, fontSize: 12 }}>({product.reviews?.length || 0}) • {product.sold?.toLocaleString()} sold</span>
         </div>
         <p style={{ color: COLORS.textMuted, fontSize: 13, marginBottom: 16, lineHeight: 1.5, height: 40, overflow: 'hidden' }}>{product.desc}</p>
-        {product.stock <= 15 && <div style={{ color: COLORS.accent, fontSize: 12, fontWeight: 600, marginBottom: 12 }}>🔥 ONLY {product.stock} LEFT</div>}
+        {!isSoldOut && product.stock <= 15 && <div style={{ color: COLORS.accent, fontSize: 12, fontWeight: 600, marginBottom: 12 }}>🔥 ONLY {product.stock} LEFT</div>}
+        {isSoldOut && <div style={{ color: COLORS.textMuted, fontSize: 12, fontWeight: 600, marginBottom: 12 }}>📧 Notify me when back in stock</div>}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <span style={{ color: '#fff', fontSize: 28, fontWeight: 800, fontFamily: "'Bebas Neue', sans-serif" }}>{formatPrice(product.price, country)}</span>
-            <span style={{ color: COLORS.textMuted, fontSize: 14, textDecoration: 'line-through', marginLeft: 8 }}>{formatPrice(product.was, country)}</span>
+            <span style={{ color: isSoldOut ? COLORS.textMuted : '#fff', fontSize: 28, fontWeight: 800, fontFamily: "'Bebas Neue', sans-serif" }}>{formatPrice(product.price, country)}</span>
+            <span style={{ color: COLORS.textDim, fontSize: 14, textDecoration: 'line-through', marginLeft: 8 }}>{formatPrice(product.was, country)}</span>
           </div>
-          <button onClick={(e) => { e.stopPropagation(); onAdd(product); }} style={{ background: COLORS.accent, color: '#fff', border: 'none', borderRadius: 8, padding: '12px 20px', fontSize: 14, fontWeight: 700, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 1, cursor: 'pointer' }}>ADD</button>
+          <button 
+            onClick={(e) => { e.stopPropagation(); if (!isSoldOut) onAdd(product); }} 
+            disabled={isSoldOut}
+            style={{ background: isSoldOut ? COLORS.border : COLORS.accent, color: '#fff', border: 'none', borderRadius: 8, padding: '12px 20px', fontSize: 14, fontWeight: 700, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 1, cursor: isSoldOut ? 'not-allowed' : 'pointer' }}>
+            {isSoldOut ? 'SOLD OUT' : 'ADD'}
+          </button>
         </div>
       </div>
     </div>
@@ -260,7 +271,7 @@ const FAQSection = () => {
 // =============================================
 // FOOTER
 // =============================================
-const Footer = () => (
+const Footer = ({ onTerms, onPrivacy }) => (
   <footer style={{ background: COLORS.bgCard, borderTop: `1px solid ${COLORS.border}`, padding: '60px 24px 30px' }}>
     <div style={{ maxWidth: 1400, margin: '0 auto' }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 40, marginBottom: 40 }}>
@@ -278,10 +289,21 @@ const Footer = () => (
           ))}
         </div>
         <div>
+          <h4 style={{ color: '#fff', fontSize: 14, fontWeight: 700, letterSpacing: 1, marginBottom: 16 }}>LEGAL</h4>
+          <button onClick={onTerms} style={{ display: 'block', background: 'none', border: 'none', color: COLORS.textMuted, fontSize: 14, marginBottom: 10, cursor: 'pointer', padding: 0, textAlign: 'left' }}>Terms of Service</button>
+          <button onClick={onPrivacy} style={{ display: 'block', background: 'none', border: 'none', color: COLORS.textMuted, fontSize: 14, marginBottom: 10, cursor: 'pointer', padding: 0, textAlign: 'left' }}>Privacy Policy</button>
+          <a href="#" style={{ display: 'block', color: COLORS.textMuted, textDecoration: 'none', fontSize: 14, marginBottom: 10 }}>Shipping Info</a>
+          <a href="#" style={{ display: 'block', color: COLORS.textMuted, textDecoration: 'none', fontSize: 14, marginBottom: 10 }}>Returns & Refunds</a>
+        </div>
+        <div>
           <h4 style={{ color: '#fff', fontSize: 14, fontWeight: 700, letterSpacing: 1, marginBottom: 16 }}>CONTACT</h4>
           <div style={{ color: COLORS.textMuted, fontSize: 14, lineHeight: 1.8 }}>
             <div>📍 {SITE.business.location}</div>
             <div>📧 {SITE.business.email}</div>
+          </div>
+          <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+            <a href={SITE.social.instagram} target="_blank" rel="noopener noreferrer" style={{ color: COLORS.textMuted, fontSize: 20 }}>📸</a>
+            <a href={SITE.social.tiktok} target="_blank" rel="noopener noreferrer" style={{ color: COLORS.textMuted, fontSize: 20 }}>🎵</a>
           </div>
         </div>
       </div>
@@ -384,7 +406,12 @@ const CartDrawer = ({ show, onClose, cart, setCart, country, onCheckout, isCheck
 const ProductModal = ({ product, show, onClose, country, onAdd }) => {
   const [qty, setQty] = useState(1);
   const [viewers] = useState(randomInRange(12, 89));
+  const [notifyEmail, setNotifyEmail] = useState('');
+  const [notified, setNotified] = useState(false);
+  
   if (!show || !product) return null;
+  const isSoldOut = product.stock === 0;
+  
   return (
     <>
       <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 300 }} />
@@ -392,35 +419,62 @@ const ProductModal = ({ product, show, onClose, country, onAdd }) => {
         <button onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, background: COLORS.bg, border: 'none', color: '#fff', width: 40, height: 40, borderRadius: '50%', fontSize: 24, cursor: 'pointer', zIndex: 10 }}>×</button>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
           <div style={{ position: 'relative' }}>
-            <img src={product.img} alt={product.name} style={{ width: '100%', height: '100%', minHeight: 400, objectFit: 'cover', borderRadius: '16px 0 0 16px' }} />
-            <div style={{ position: 'absolute', top: 16, left: 16, background: product.tagBg, color: '#fff', padding: '8px 16px', borderRadius: 6, fontSize: 12, fontWeight: 700, letterSpacing: 1 }}>{product.tag}</div>
+            <img src={product.img} alt={product.name} style={{ width: '100%', height: '100%', minHeight: 400, objectFit: 'cover', borderRadius: '16px 0 0 16px', filter: isSoldOut ? 'grayscale(50%)' : 'none' }} />
+            <div style={{ position: 'absolute', top: 16, left: 16, background: isSoldOut ? '#555' : product.tagBg, color: '#fff', padding: '8px 16px', borderRadius: 6, fontSize: 12, fontWeight: 700, letterSpacing: 1 }}>{isSoldOut ? 'SOLD OUT' : product.tag}</div>
+            {isSoldOut && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '16px 0 0 16px' }}>
+              <span style={{ background: '#000', color: '#fff', padding: '16px 32px', borderRadius: 8, fontSize: 20, fontWeight: 700, letterSpacing: 2 }}>SOLD OUT</span>
+            </div>}
           </div>
           <div style={{ padding: 32 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: COLORS.bg, padding: '8px 12px', borderRadius: 6, marginBottom: 16 }}>
+            {!isSoldOut && <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: COLORS.bg, padding: '8px 12px', borderRadius: 6, marginBottom: 16 }}>
               <span style={{ width: 8, height: 8, background: COLORS.success, borderRadius: '50%' }} /><span style={{ color: '#fff', fontSize: 13 }}>{viewers} people viewing</span>
-            </div>
+            </div>}
+            {isSoldOut && <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: COLORS.error, padding: '8px 12px', borderRadius: 6, marginBottom: 16 }}>
+              <span style={{ color: '#fff', fontSize: 13, fontWeight: 600 }}>Currently Unavailable</span>
+            </div>}
             <h2 style={{ color: '#fff', fontSize: 32, fontWeight: 800, fontFamily: "'Bebas Neue', sans-serif", marginBottom: 12 }}>{product.name}</h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}><Stars rating={5} /><span style={{ color: COLORS.textMuted }}>({product.reviews?.length || 0} reviews) • {product.sold?.toLocaleString()} sold</span></div>
             <p style={{ color: COLORS.textMuted, fontSize: 15, lineHeight: 1.6, marginBottom: 24 }}>{product.desc}</p>
             <div style={{ marginBottom: 24 }}>
-              <span style={{ color: '#fff', fontSize: 42, fontWeight: 800, fontFamily: "'Bebas Neue', sans-serif" }}>{formatPrice(product.price, country)}</span>
-              <span style={{ color: COLORS.textMuted, fontSize: 20, textDecoration: 'line-through', marginLeft: 12 }}>{formatPrice(product.was, country)}</span>
-              <span style={{ color: COLORS.success, fontSize: 16, fontWeight: 700, marginLeft: 12 }}>SAVE {getDiscount(product.price, product.was)}%</span>
+              <span style={{ color: isSoldOut ? COLORS.textMuted : '#fff', fontSize: 42, fontWeight: 800, fontFamily: "'Bebas Neue', sans-serif" }}>{formatPrice(product.price, country)}</span>
+              <span style={{ color: COLORS.textDim, fontSize: 20, textDecoration: 'line-through', marginLeft: 12 }}>{formatPrice(product.was, country)}</span>
+              {!isSoldOut && <span style={{ color: COLORS.success, fontSize: 16, fontWeight: 700, marginLeft: 12 }}>SAVE {getDiscount(product.price, product.was)}%</span>}
             </div>
-            {product.stock <= 15 && <div style={{ background: 'rgba(255, 77, 0, 0.1)', border: `1px solid ${COLORS.accent}`, borderRadius: 8, padding: '12px 16px', marginBottom: 24, color: COLORS.accent, fontWeight: 600 }}>🔥 Only {product.stock} left in stock!</div>}
-            <div style={{ marginBottom: 24 }}>
-              <label style={{ color: COLORS.textMuted, fontSize: 12, fontWeight: 600, letterSpacing: 1, display: 'block', marginBottom: 8 }}>QUANTITY</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <button onClick={() => setQty(Math.max(1, qty - 1))} style={{ background: COLORS.border, border: 'none', color: '#fff', width: 40, height: 40, borderRadius: 8, fontSize: 20, cursor: 'pointer' }}>−</button>
-                <span style={{ color: '#fff', fontSize: 18, fontWeight: 600, minWidth: 40, textAlign: 'center' }}>{qty}</span>
-                <button onClick={() => setQty(qty + 1)} style={{ background: COLORS.border, border: 'none', color: '#fff', width: 40, height: 40, borderRadius: 8, fontSize: 20, cursor: 'pointer' }}>+</button>
+            
+            {isSoldOut ? (
+              <div>
+                <div style={{ background: 'rgba(255, 77, 0, 0.1)', border: `1px solid ${COLORS.accent}`, borderRadius: 8, padding: '16px', marginBottom: 24, textAlign: 'center' }}>
+                  <div style={{ color: '#fff', fontWeight: 600, marginBottom: 8 }}>🔔 Get notified when back in stock</div>
+                  {notified ? (
+                    <div style={{ color: COLORS.success, fontWeight: 600 }}>✓ We'll email you when it's available!</div>
+                  ) : (
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <input type="email" placeholder="Enter your email" value={notifyEmail} onChange={(e) => setNotifyEmail(e.target.value)}
+                        style={{ flex: 1, background: COLORS.bg, border: `1px solid ${COLORS.border}`, borderRadius: 6, padding: '10px 12px', color: '#fff', fontSize: 14 }} />
+                      <button onClick={() => { if (notifyEmail) setNotified(true); }} style={{ background: COLORS.accent, color: '#fff', border: 'none', borderRadius: 6, padding: '10px 16px', fontWeight: 600, cursor: 'pointer' }}>NOTIFY ME</button>
+                    </div>
+                  )}
+                </div>
+                <div style={{ color: COLORS.textMuted, fontSize: 13, textAlign: 'center' }}>This bundle was a hit! We're restocking soon.</div>
               </div>
-            </div>
-            <button onClick={() => { for (let i = 0; i < qty; i++) onAdd(product); onClose(); }}
-              style={{ width: '100%', background: `linear-gradient(135deg, ${COLORS.accent} 0%, #FF6B2B 100%)`, color: '#fff', border: 'none', borderRadius: 8, padding: '18px', fontSize: 18, fontWeight: 700, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2, cursor: 'pointer', boxShadow: `0 4px 20px ${COLORS.accentGlow}`, marginBottom: 16 }}>
-              ADD TO CART - {formatPrice(product.price * qty, country)}
-            </button>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 20, color: COLORS.textMuted, fontSize: 12 }}><span>🚀 Fast Shipping</span><span>↩️ 30-Day Returns</span><span>🔒 Secure</span></div>
+            ) : (
+              <>
+                {product.stock <= 15 && <div style={{ background: 'rgba(255, 77, 0, 0.1)', border: `1px solid ${COLORS.accent}`, borderRadius: 8, padding: '12px 16px', marginBottom: 24, color: COLORS.accent, fontWeight: 600 }}>🔥 Only {product.stock} left in stock!</div>}
+                <div style={{ marginBottom: 24 }}>
+                  <label style={{ color: COLORS.textMuted, fontSize: 12, fontWeight: 600, letterSpacing: 1, display: 'block', marginBottom: 8 }}>QUANTITY</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <button onClick={() => setQty(Math.max(1, qty - 1))} style={{ background: COLORS.border, border: 'none', color: '#fff', width: 40, height: 40, borderRadius: 8, fontSize: 20, cursor: 'pointer' }}>−</button>
+                    <span style={{ color: '#fff', fontSize: 18, fontWeight: 600, minWidth: 40, textAlign: 'center' }}>{qty}</span>
+                    <button onClick={() => setQty(qty + 1)} style={{ background: COLORS.border, border: 'none', color: '#fff', width: 40, height: 40, borderRadius: 8, fontSize: 20, cursor: 'pointer' }}>+</button>
+                  </div>
+                </div>
+                <button onClick={() => { for (let i = 0; i < qty; i++) onAdd(product); onClose(); }}
+                  style={{ width: '100%', background: `linear-gradient(135deg, ${COLORS.accent} 0%, #FF6B2B 100%)`, color: '#fff', border: 'none', borderRadius: 8, padding: '18px', fontSize: 18, fontWeight: 700, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2, cursor: 'pointer', boxShadow: `0 4px 20px ${COLORS.accentGlow}`, marginBottom: 16 }}>
+                  ADD TO CART - {formatPrice(product.price * qty, country)}
+                </button>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 20, color: COLORS.textMuted, fontSize: 12 }}><span>🚀 Fast Shipping</span><span>↩️ 30-Day Returns</span><span>🔒 Secure</span></div>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -453,6 +507,73 @@ const CountrySelector = ({ show, onClose, country, setCountry }) => {
 };
 
 // =============================================
+// LEGAL MODALS
+// =============================================
+const TermsModal = ({ show, onClose }) => {
+  if (!show) return null;
+  return (
+    <>
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 500 }} />
+      <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: COLORS.bgCard, borderRadius: 16, maxWidth: 700, width: '90%', maxHeight: '80vh', overflow: 'auto', zIndex: 501, border: `1px solid ${COLORS.border}`, padding: 32 }}>
+        <button onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, background: 'transparent', border: 'none', color: COLORS.textMuted, fontSize: 28, cursor: 'pointer' }}>×</button>
+        <h2 style={{ color: '#fff', fontSize: 28, fontFamily: "'Bebas Neue', sans-serif", marginBottom: 24, letterSpacing: 2 }}>TERMS OF SERVICE</h2>
+        <div style={{ color: COLORS.textMuted, fontSize: 14, lineHeight: 1.8 }}>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>1. Agreement to Terms</strong><br/>By accessing ARK Global Supply ("we," "us," or "our"), you agree to be bound by these Terms of Service. If you disagree with any part of these terms, please do not use our website.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>2. Products & Pricing</strong><br/>All prices are displayed in Australian Dollars (AUD) unless otherwise stated. We reserve the right to modify prices at any time without prior notice. Product images are for illustration purposes; actual items may vary slightly in appearance.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>3. Orders & Payment</strong><br/>All orders are subject to product availability. Payment is processed securely via Stripe. We accept Visa, Mastercard, American Express, PayPal, Afterpay, and Zip. By placing an order, you warrant that you are legally capable of entering into binding contracts.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>4. Shipping & Delivery</strong><br/>We ship within Australia and to select international destinations. Estimated delivery times are provided as a guide only and are not guaranteed. ARK Global Supply is not liable for any delays caused by shipping carriers, customs, or circumstances beyond our control.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>5. Returns & Refunds</strong><br/>We offer a 30-day money-back guarantee on unused items in their original packaging. To initiate a return, please contact support@arkglobalsupply.com. Refunds will be processed within 5-10 business days after we receive the returned item. Shipping costs for returns are the responsibility of the customer unless the item is faulty or incorrect.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>6. Intellectual Property</strong><br/>All content on this website, including text, graphics, logos, images, and software, is the property of ARK Global Supply and is protected by Australian and international copyright laws.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>7. Limitation of Liability</strong><br/>To the fullest extent permitted by law, ARK Global Supply shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising out of your use of our products or website.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>8. Governing Law</strong><br/>These Terms of Service are governed by and construed in accordance with the laws of New South Wales, Australia. Any disputes shall be subject to the exclusive jurisdiction of the courts of New South Wales.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>9. Changes to Terms</strong><br/>We reserve the right to update these terms at any time. Changes will be effective immediately upon posting to the website. Your continued use of the website constitutes acceptance of the revised terms.</p>
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>10. Contact Us</strong><br/>If you have any questions about these Terms of Service, please contact us at support@arkglobalsupply.com</p>
+          <p style={{ color: COLORS.textDim, marginTop: 24, paddingTop: 16, borderTop: `1px solid ${COLORS.border}` }}>Last updated: December 2024</p>
+        </div>
+      </div>
+    </>
+  );
+};
+
+const PrivacyModal = ({ show, onClose }) => {
+  if (!show) return null;
+  return (
+    <>
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 500 }} />
+      <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: COLORS.bgCard, borderRadius: 16, maxWidth: 700, width: '90%', maxHeight: '80vh', overflow: 'auto', zIndex: 501, border: `1px solid ${COLORS.border}`, padding: 32 }}>
+        <button onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, background: 'transparent', border: 'none', color: COLORS.textMuted, fontSize: 28, cursor: 'pointer' }}>×</button>
+        <h2 style={{ color: '#fff', fontSize: 28, fontFamily: "'Bebas Neue', sans-serif", marginBottom: 24, letterSpacing: 2 }}>PRIVACY POLICY</h2>
+        <div style={{ color: COLORS.textMuted, fontSize: 14, lineHeight: 1.8 }}>
+          <p style={{ marginBottom: 16 }}>ARK Global Supply ("we," "us," or "our") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website.</p>
+          
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Information We Collect</strong><br/>We may collect personal information that you voluntarily provide, including: name, email address, shipping address, phone number, and payment information. We also automatically collect certain information when you visit our website, including IP address, browser type, device information, and browsing behavior through cookies.</p>
+          
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>How We Use Your Information</strong><br/>We use the information we collect to: process and fulfill your orders, send order confirmations and shipping updates, communicate with you about products, services, and promotions, improve our website and customer service, comply with legal obligations, and prevent fraud.</p>
+          
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Information Sharing</strong><br/>We do not sell, trade, or rent your personal information to third parties. We may share your information with: payment processors (Stripe) to complete transactions, shipping carriers to deliver your orders, analytics providers (Google Analytics) to understand website usage, and law enforcement when required by law.</p>
+          
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Data Security</strong><br/>We implement appropriate technical and organizational measures to protect your personal information. All payment transactions are processed through Stripe using SSL encryption. We do not store credit card details on our servers.</p>
+          
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Cookies</strong><br/>We use cookies to enhance your browsing experience, analyze website traffic, and personalize content. You can control cookie settings through your browser preferences. Disabling cookies may affect website functionality.</p>
+          
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Your Rights</strong><br/>Under Australian Privacy Law, you have the right to: access the personal information we hold about you, request correction of inaccurate information, request deletion of your information, opt out of marketing communications, and lodge a complaint with the Office of the Australian Information Commissioner (OAIC).</p>
+          
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Marketing Communications</strong><br/>With your consent, we may send you promotional emails about new products, special offers, and other information we think you may find interesting. You can opt out at any time by clicking the "unsubscribe" link in any marketing email.</p>
+          
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Data Retention</strong><br/>We retain your personal information for as long as necessary to fulfill the purposes outlined in this policy, unless a longer retention period is required by law.</p>
+          
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Changes to This Policy</strong><br/>We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.</p>
+          
+          <p style={{ marginBottom: 16 }}><strong style={{ color: '#fff' }}>Contact Us</strong><br/>If you have questions about this Privacy Policy or wish to exercise your rights, please contact us at:<br/>Email: support@arkglobalsupply.com<br/>Location: Sydney, NSW, Australia</p>
+          
+          <p style={{ color: COLORS.textDim, marginTop: 24, paddingTop: 16, borderTop: `1px solid ${COLORS.border}` }}>Last updated: December 2024</p>
+        </div>
+      </div>
+    </>
+  );
+};
+
+// =============================================
 // POPUPS
 // =============================================
 const ExitIntent = ({ show, onClose }) => {
@@ -463,8 +584,8 @@ const ExitIntent = ({ show, onClose }) => {
       <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: COLORS.bgCard, borderRadius: 16, maxWidth: 450, width: '90%', padding: 40, textAlign: 'center', zIndex: 401, border: `2px solid ${COLORS.accent}`, boxShadow: `0 0 60px ${COLORS.accentGlow}` }}>
         <button onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, background: 'transparent', border: 'none', color: COLORS.textMuted, fontSize: 28, cursor: 'pointer' }}>×</button>
         <div style={{ fontSize: 60, marginBottom: 20 }}>🔥</div>
-        <h2 style={{ fontSize: 36, fontWeight: 800, color: '#fff', fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2, marginBottom: 12 }}>WAIT. DON'T LEAVE.</h2>
-        <p style={{ color: COLORS.textMuted, fontSize: 16, marginBottom: 24 }}>Here's 20% off your order:</p>
+        <h2 style={{ fontSize: 36, fontWeight: 800, color: '#fff', fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 2, marginBottom: 12 }}>WAIT, DON'T LEAVE!</h2>
+        <p style={{ color: COLORS.textMuted, fontSize: 16, marginBottom: 24 }}>Here's 20% off your first order:</p>
         <div style={{ background: COLORS.bg, border: `2px dashed ${COLORS.accent}`, borderRadius: 8, padding: '16px 24px', marginBottom: 24 }}>
           <span style={{ color: COLORS.accent, fontSize: 28, fontWeight: 800, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: 4 }}>ALPHA20</span>
         </div>
@@ -529,6 +650,8 @@ const App = () => {
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
 
   // Check URL for success/cancel
   useEffect(() => {
@@ -550,6 +673,7 @@ const App = () => {
 
   // Add to cart
   const handleAddToCart = (product) => {
+    if (product.stock === 0) return;
     setCart(prev => {
       const existing = prev.find(item => item.id === product.id);
       if (existing) return prev.map(item => item.id === product.id ? { ...item, qty: item.qty + 1 } : item);
@@ -606,7 +730,7 @@ const App = () => {
       <ProductGrid country={country} onAdd={handleAddToCart} onView={handleViewDetails} />
       <Newsletter />
       <FAQSection />
-      <Footer />
+      <Footer onTerms={() => setShowTerms(true)} onPrivacy={() => setShowPrivacy(true)} />
       
       <CartDrawer show={showCart} onClose={() => setShowCart(false)} cart={cart} setCart={setCart} country={country} onCheckout={handleCheckout} isCheckingOut={isCheckingOut} />
       <ProductModal product={selectedProduct} show={showProductModal} onClose={() => setShowProductModal(false)} country={country} onAdd={handleAddToCart} />
@@ -614,6 +738,8 @@ const App = () => {
       <ExitIntent show={showExitIntent} onClose={() => setShowExitIntent(false)} />
       <SocialProofPopup show={!!socialProof} data={socialProof} />
       <Notification show={!!notification} message={notification} />
+      <TermsModal show={showTerms} onClose={() => setShowTerms(false)} />
+      <PrivacyModal show={showPrivacy} onClose={() => setShowPrivacy(false)} />
 
       <style>{`
         * { margin: 0; padding: 0; box-sizing: border-box; }
