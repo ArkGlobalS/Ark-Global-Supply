@@ -164,16 +164,16 @@ export const DISCOUNTS = [
 
 // SOCIAL PROOF DATA - More varied messages
 export const SOCIAL_PROOF = [
-  { name: 'Jake', loc: 'Sydney', prod: 'Bluey Bundle', cat: 'kids', action: 'just purchased' },
-  { name: 'Sophie', loc: 'Melbourne', prod: 'Bluey Bundle', cat: 'kids', action: 'just purchased' },
-  { name: 'Marcus', loc: 'Brisbane', prod: 'Bluey Bundle', cat: 'kids', action: 'added to cart' },
-  { name: 'Emma', loc: 'Perth', prod: 'Bluey Bundle', cat: 'kids', action: 'just purchased' },
-  { name: 'Sarah', loc: 'Adelaide', prod: 'Bluey Bundle', cat: 'kids', action: 'is viewing' },
-  { name: 'Olivia', loc: 'Gold Coast', prod: 'Bluey Bundle', cat: 'kids', action: 'just purchased' },
-  { name: 'Liam', loc: 'Sydney', prod: 'Bluey Bundle', cat: 'kids', action: 'added to cart' },
-  { name: 'Mia', loc: 'Canberra', prod: 'Bluey Bundle', cat: 'kids', action: 'just purchased' },
-  { name: 'Noah', loc: 'Hobart', prod: 'Bluey Bundle', cat: 'kids', action: 'is viewing' },
-  { name: 'Chloe', loc: 'Darwin', prod: 'Bluey Bundle', cat: 'kids', action: 'just purchased' },
+  { name: 'Jake', loc: 'Sydney', prod: 'Bluey Ultimate Bundle', cat: 'kids', action: 'just purchased' },
+  { name: 'Sophie', loc: 'Melbourne', prod: 'Bluey Ultimate Bundle', cat: 'kids', action: 'just purchased' },
+  { name: 'Marcus', loc: 'Brisbane', prod: 'Bluey Ultimate Bundle', cat: 'kids', action: 'added to cart' },
+  { name: 'Emma', loc: 'Perth', prod: 'Bluey Ultimate Bundle', cat: 'kids', action: 'just purchased' },
+  { name: 'Sarah', loc: 'Adelaide', prod: 'Bluey Ultimate Bundle', cat: 'kids', action: 'is viewing' },
+  { name: 'Olivia', loc: 'Gold Coast', prod: 'Bluey Ultimate Bundle', cat: 'kids', action: 'just purchased' },
+  { name: 'Liam', loc: 'Sydney', prod: 'Bluey Ultimate Bundle', cat: 'kids', action: 'added to cart' },
+  { name: 'Mia', loc: 'Canberra', prod: 'Bluey Ultimate Bundle', cat: 'kids', action: 'just purchased' },
+  { name: 'Noah', loc: 'Hobart', prod: 'Bluey Ultimate Bundle', cat: 'kids', action: 'is viewing' },
+  { name: 'Chloe', loc: 'Darwin', prod: 'Bluey Ultimate Bundle', cat: 'kids', action: 'just purchased' },
 ];
 
 // FAQ
@@ -196,13 +196,11 @@ export const PRODUCTS = [
     id: 300,
     name: "Bluey Ultimate Bundle",
     desc: "🔥 SELLING FAST! Everything your little one needs for adventure! Includes official Bluey backpack, Crayola colouring sticker sheet, adorable 2-tier Bluey snack box & 24-pack of Crayola crayons. Perfect for school, daycare or weekend fun. Limited stock - when they're gone, they're gone!",
-    price: 59.99,
-    was: 93.50,
-    img: "https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=800",
+    price: 93,
+    was: 103.33,
+    img: "https://i.ibb.co/G45qxVhk/download.jpg",
     images: [
-      "https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=800",
-      "https://images.unsplash.com/photo-1596464716127-f2a82984de30?w=800",
-      "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800"
+      "https://i.ibb.co/G45qxVhk/download.jpg"
     ],
     tag: "🔥 ONLY 5 LEFT",
     tagBg: "#EF4444",
