@@ -198,10 +198,10 @@ export const PRODUCTS = [
     desc: "🔥 SELLING FAST! Everything your little one needs for adventure! Includes official Bluey backpack, Crayola colouring sticker sheet, adorable 2-tier Bluey snack box & 24-pack of Crayola crayons. Perfect for school, daycare or weekend fun. Limited stock - when they're gone, they're gone!",
     price: 93,
     was: 103.33,
-    img: "https://i.ibb.co/G45qxVhk/download.jpg",
-    images: [
-      "https://i.ibb.co/G45qxVhk/download.jpg"
-    ],
+    img: "https://i.ibb.co/0RJ0yzdX/Pic1-Bluey-family.jpg",
+images: [
+  "https://i.ibb.co/0RJ0yzdX/Pic1-Bluey-family.jpg"
+],
     tag: "🔥 ONLY 5 LEFT",
     tagBg: "#EF4444",
     cat: "kids",
