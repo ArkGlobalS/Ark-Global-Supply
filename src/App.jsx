@@ -125,11 +125,42 @@ function App() {
   // Checkout
   const handleCheckout = async () => {
     setIsCheckingOut(true);
-    // Simulate redirect to Stripe
-    setTimeout(() => {
-      alert('Redirecting to Stripe Checkout...\n\nIn production, this would create a Stripe session and redirect.');
+    
+    try {
+      // Calculate shipping
+      const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+      const freeShipping = subtotal >= 100;
+      const shippingCost = freeShipping ? 0 : 8.95; // Default NSW rate
+      
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: cart.map(item => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            qty: item.qty,
+            img: item.img,
+            desc: item.desc,
+          })),
+          currency: country.currency,
+          shippingCost: shippingCost,
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error(data.error || 'Failed to create checkout session');
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      alert('Checkout failed. Please try again.');
       setIsCheckingOut(false);
-    }, 1500);
+    }
   };
 
   // Get current theme
