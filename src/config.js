@@ -84,20 +84,20 @@ export const SITE = {
     freeThreshold: 100,
     rates: {
       AU: {
-        NSW: { standard: 8.95, express: 14.95, time: '1-3 days' },
-        VIC: { standard: 9.95, express: 16.95, time: '2-4 days' },
-        QLD: { standard: 9.95, express: 16.95, time: '2-4 days' },
-        SA: { standard: 11.95, express: 18.95, time: '3-5 days' },
-        WA: { standard: 14.95, express: 22.95, time: '4-7 days' },
-        TAS: { standard: 12.95, express: 19.95, time: '3-5 days' },
-        NT: { standard: 14.95, express: 24.95, time: '5-8 days' },
-        ACT: { standard: 9.95, express: 15.95, time: '2-3 days' },
+        NSW: { standard: 19.95, express: 29.95, time: '1-3 days' },
+        VIC: { standard: 19.95, express: 29.95, time: '2-4 days' },
+        QLD: { standard: 19.95, express: 29.95, time: '2-4 days' },
+        SA: { standard: 19.95, express: 29.95, time: '3-5 days' },
+        WA: { standard: 19.95, express: 34.95, time: '4-7 days' },
+        TAS: { standard: 19.95, express: 29.95, time: '3-5 days' },
+        NT: { standard: 19.95, express: 34.95, time: '5-8 days' },
+        ACT: { standard: 19.95, express: 29.95, time: '2-3 days' },
       },
-      NZ: { standard: 24.95, express: 39.95, time: '5-10 days' },
-      US: { standard: 29.95, express: 49.95, time: '7-14 days' },
-      GB: { standard: 29.95, express: 49.95, time: '7-14 days' },
-      SG: { standard: 19.95, express: 34.95, time: '5-10 days' },
-      CA: { standard: 29.95, express: 49.95, time: '7-14 days' },
+      NZ: { standard: 29.95, express: 44.95, time: '5-10 days' },
+      US: { standard: 34.95, express: 54.95, time: '7-14 days' },
+      GB: { standard: 34.95, express: 54.95, time: '7-14 days' },
+      SG: { standard: 24.95, express: 39.95, time: '5-10 days' },
+      CA: { standard: 34.95, express: 54.95, time: '7-14 days' },
     },
   },
   trustBadges: [
@@ -198,10 +198,10 @@ export const PRODUCTS = [
     desc: "🔥 SELLING FAST! Everything your little one needs for adventure! Includes official Bluey backpack, Crayola colouring sticker sheet, adorable 2-tier Bluey snack box & 24-pack of Crayola crayons. Perfect for school, daycare or weekend fun. Limited stock - when they're gone, they're gone!",
     price: 93,
     was: 103.33,
-img: "https://i.ibb.co/3Q5m8vP/bluey-bundle.png",
-images: [
-  "https://i.ibb.co/3Q5m8vP/bluey-bundle.png"
-],
+    img: "https://i.ibb.co/G45qxVhk/download.jpg",
+    images: [
+      "https://i.ibb.co/G45qxVhk/download.jpg"
+    ],
     tag: "🔥 ONLY 5 LEFT",
     tagBg: "#EF4444",
     cat: "kids",
