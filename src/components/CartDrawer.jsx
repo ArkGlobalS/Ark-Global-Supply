@@ -249,7 +249,21 @@ const CartDrawer = ({ show, onClose, cart, setCart, country, onCheckout, isCheck
             
             {/* Checkout Button */}
             <button 
-              onClick={onCheckout} 
+              type="button"
+              onClick={() => onCheckout({
+                items: cart.map(item => ({
+                  id: item.id,
+                  name: item.name,
+                  price: item.price,
+                  qty: item.qty,
+                  img: item.img,
+                  desc: item.desc,
+                })),
+                currency: country.currency,
+                shippingCost: appliedCode?.type === 'shipping' ? 0 : shippingCost,
+                discount: discount,
+                discountCode: appliedCode?.code || null,
+              })} 
               disabled={isCheckingOut} 
               style={{ 
                 width: '100%', 
