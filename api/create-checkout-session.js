@@ -23,24 +23,33 @@ export default async function handler(req, res) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
   try {
-    const { items, currency = 'aud', shippingCost = 0 } = req.body;
+    const { items, currency = 'aud', shippingCost = 0, discount = 0 } = req.body;
 
     if (!items || items.length === 0) {
       return res.status(400).json({ error: 'No items in cart' });
     }
 
-    // Build line items for Stripe
-    const lineItems = items.map(item => ({
-      price_data: {
-        currency: currency.toLowerCase(),
-        product_data: {
-          name: item.name,
-          images: item.img ? [item.img] : [],
+    // Calculate subtotal
+    const subtotal = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    
+    // Calculate discount percentage to apply to each item
+    const discountPercent = discount > 0 ? discount / subtotal : 0;
+
+    // Build line items for Stripe (with discount applied to each item)
+    const lineItems = items.map(item => {
+      const discountedPrice = item.price * (1 - discountPercent);
+      return {
+        price_data: {
+          currency: currency.toLowerCase(),
+          product_data: {
+            name: discount > 0 ? `${item.name} (10% off)` : item.name,
+            images: item.img ? [item.img] : [],
+          },
+          unit_amount: Math.round(discountedPrice * 100), // Stripe uses cents
         },
-        unit_amount: Math.round(item.price * 100), // Stripe uses cents
-      },
-      quantity: item.qty,
-    }));
+        quantity: item.qty,
+      };
+    });
 
     // Add shipping as a line item if not free
     if (shippingCost > 0) {
