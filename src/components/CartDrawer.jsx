@@ -17,11 +17,20 @@ const CartDrawer = ({ show, onClose, cart, setCart, country, onCheckout, isCheck
   const freeShipping = subtotal >= SITE.shipping.freeThreshold;
   
   // Calculate shipping cost
-  const shippingCost = freeShipping 
-    ? 0 
-    : country.currency === 'AUD' 
-      ? getShippingRate('AU', shipping.state, shipping.express)
-      : getShippingRate(Object.keys(SITE.shipping.rates).find(k => SITE.shipping.rates[k] && k !== 'AU') || 'US', null, shipping.express);
+  const getShippingCostValue = () => {
+    if (freeShipping) return 0;
+    if (country.currency === 'AUD') {
+      return getShippingRate('AU', shipping.state, shipping.express);
+    }
+    // International shipping
+    const countryCode = country.currency === 'NZD' ? 'NZ' : 
+                        country.currency === 'GBP' ? 'GB' : 
+                        country.currency === 'CAD' ? 'CA' : 
+                        country.currency === 'SGD' ? 'SG' : 'US';
+    return getShippingRate(countryCode, null, shipping.express);
+  };
+  
+  const shippingCost = getShippingCostValue();
   
   const shippingTime = country.currency === 'AUD'
     ? getShippingTime('AU', shipping.state)
@@ -157,6 +166,7 @@ const CartDrawer = ({ show, onClose, cart, setCart, country, onCheckout, isCheck
                 </select>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button 
+                    type="button"
                     onClick={() => setShipping({ ...shipping, express: false })}
                     style={{ 
                       flex: 1, 
@@ -175,6 +185,7 @@ const CartDrawer = ({ show, onClose, cart, setCart, country, onCheckout, isCheck
                     </div>
                   </button>
                   <button 
+                    type="button"
                     onClick={() => setShipping({ ...shipping, express: true })}
                     style={{ 
                       flex: 1, 
@@ -206,9 +217,10 @@ const CartDrawer = ({ show, onClose, cart, setCart, country, onCheckout, isCheck
                 placeholder="Promo code" 
                 value={promoCode} 
                 onChange={(e) => setPromoCode(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applyPromo(); } }}
                 style={{ flex: 1, background: COLORS.bgCard, border: `1px solid ${COLORS.border}`, borderRadius: 6, padding: '10px 12px', color: '#fff', fontSize: 14 }} 
               />
-              <button onClick={applyPromo} style={{ background: COLORS.border, color: '#fff', border: 'none', borderRadius: 6, padding: '10px 16px', fontWeight: 600, cursor: 'pointer' }}>APPLY</button>
+              <button type="button" onClick={applyPromo} style={{ background: COLORS.border, color: '#fff', border: 'none', borderRadius: 6, padding: '10px 16px', fontWeight: 600, cursor: 'pointer' }}>APPLY</button>
             </div>
             {promoError && <div style={{ color: COLORS.error, fontSize: 12, marginBottom: 8 }}>❌ {promoError}</div>}
             {appliedCode && <div style={{ color: COLORS.success, fontSize: 12, marginBottom: 8 }}>✓ {appliedCode.desc} applied!</div>}
