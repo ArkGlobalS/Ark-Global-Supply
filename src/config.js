@@ -155,12 +155,8 @@ export const AU_STATES = [
   { code: 'ACT', name: 'Australian Capital Territory' },
 ];
 
-// DISCOUNT CODES
-export const DISCOUNTS = [
-  { code: 'SAVE10', type: 'percent', value: 10, desc: '10% off', active: true },
-  { code: 'WELCOME10', type: 'percent', value: 10, desc: '10% off first order', active: true },
-  { code: 'FREESHIP', type: 'shipping', value: 0, desc: 'Free shipping', active: true },
-];
+// DISCOUNT CODES - Disabled
+export const DISCOUNTS = [];
 
 // SOCIAL PROOF DATA
 export const SOCIAL_PROOF = [
