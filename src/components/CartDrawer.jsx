@@ -87,22 +87,7 @@ const CartDrawer = ({ show, onClose, cart, setCart, country, onCheckout, isCheck
           <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: COLORS.textMuted, fontSize: 28, cursor: 'pointer' }}>×</button>
         </div>
         
-        {/* Free Shipping Progress */}
-        {!freeShipping && subtotal > 0 && (
-          <div style={{ padding: '16px 20px', borderBottom: `1px solid ${COLORS.border}`, background: COLORS.bg }}>
-            <div style={{ color: COLORS.textMuted, fontSize: 13, marginBottom: 8 }}>
-              Add <strong style={{ color: accentColor }}>{formatPrice(SITE.shipping.freeThreshold - subtotal, country)}</strong> more for FREE SHIPPING! 🚚
-            </div>
-            <div style={{ background: COLORS.border, borderRadius: 10, height: 8, overflow: 'hidden' }}>
-              <div style={{ 
-                background: `linear-gradient(90deg, ${accentColor} 0%, ${COLORS.accentLight} 100%)`, 
-                height: '100%', 
-                width: `${Math.min((subtotal / SITE.shipping.freeThreshold) * 100, 100)}%`,
-                transition: 'width 0.3s ease'
-              }} />
-            </div>
-          </div>
-        )}
+        {/* Shipping Info */}
         
         {/* Cart Items */}
         <div style={{ flex: 1, overflow: 'auto', padding: 20 }}>
@@ -209,21 +194,6 @@ const CartDrawer = ({ show, onClose, cart, setCart, country, onCheckout, isCheck
                 </div>
               </div>
             )}
-            
-            {/* Promo Code */}
-            <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-              <input 
-                type="text" 
-                placeholder="Promo code" 
-                value={promoCode} 
-                onChange={(e) => setPromoCode(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applyPromo(); } }}
-                style={{ flex: 1, background: COLORS.bgCard, border: `1px solid ${COLORS.border}`, borderRadius: 6, padding: '10px 12px', color: '#fff', fontSize: 14 }} 
-              />
-              <button type="button" onClick={applyPromo} style={{ background: COLORS.border, color: '#fff', border: 'none', borderRadius: 6, padding: '10px 16px', fontWeight: 600, cursor: 'pointer' }}>APPLY</button>
-            </div>
-            {promoError && <div style={{ color: COLORS.error, fontSize: 12, marginBottom: 8 }}>❌ {promoError}</div>}
-            {appliedCode && <div style={{ color: COLORS.success, fontSize: 12, marginBottom: 8 }}>✓ {appliedCode.desc} applied!</div>}
             
             {/* Totals */}
             <div style={{ marginBottom: 16 }}>
