@@ -80,24 +80,25 @@ export const SITE = {
   },
   saleEndDate: '2025-02-28T23:59:59+11:00',
   shipping: {
-    freeThreshold: 100,
+    freeThreshold: 200,
     rates: {
       AU: {
-        NSW: { standard: 19.95, express: 29.95, time: '1-3 days' },
-        VIC: { standard: 19.95, express: 29.95, time: '2-4 days' },
-        QLD: { standard: 19.95, express: 29.95, time: '2-4 days' },
-        SA: { standard: 19.95, express: 29.95, time: '3-5 days' },
-        WA: { standard: 19.95, express: 34.95, time: '4-7 days' },
-        TAS: { standard: 19.95, express: 29.95, time: '3-5 days' },
-        NT: { standard: 19.95, express: 34.95, time: '5-8 days' },
-        ACT: { standard: 19.95, express: 29.95, time: '2-3 days' },
+        NSW: { standard: 19.95, express: 29.95, time: '1-2 weeks' },
+        VIC: { standard: 19.95, express: 29.95, time: '1-2 weeks' },
+        QLD: { standard: 19.95, express: 29.95, time: '1-2 weeks' },
+        SA: { standard: 19.95, express: 29.95, time: '1-2 weeks' },
+        WA: { standard: 19.95, express: 34.95, time: '1-2 weeks' },
+        TAS: { standard: 19.95, express: 29.95, time: '1-2 weeks' },
+        NT: { standard: 19.95, express: 34.95, time: '1-2 weeks' },
+        ACT: { standard: 19.95, express: 29.95, time: '1-2 weeks' },
       },
-      NZ: { standard: 29.95, express: 44.95, time: '5-10 days' },
-      US: { standard: 34.95, express: 54.95, time: '7-14 days' },
-      GB: { standard: 34.95, express: 54.95, time: '7-14 days' },
-      SG: { standard: 24.95, express: 39.95, time: '5-10 days' },
-      CA: { standard: 34.95, express: 54.95, time: '7-14 days' },
+      NZ: { standard: 29.95, express: 44.95, time: '2-3 weeks' },
+      US: { standard: 34.95, express: 54.95, time: '2-4 weeks' },
+      GB: { standard: 34.95, express: 54.95, time: '2-4 weeks' },
+      SG: { standard: 24.95, express: 39.95, time: '2-3 weeks' },
+      CA: { standard: 34.95, express: 54.95, time: '2-4 weeks' },
     },
+    deliveryNote: 'Delivery times may be extended during holiday periods and peak seasons.',
   },
   trustBadges: [
     { icon: '🚀', text: 'FAST SHIPPING' },
@@ -177,7 +178,7 @@ export const SOCIAL_PROOF = [
 
 // FAQ
 export const FAQ = [
-  { q: 'How fast is shipping?', a: 'NSW orders arrive in 1-3 business days! Other Australian states take 2-7 days depending on location. International shipping is 5-14 days.' },
+  { q: 'How fast is shipping?', a: 'Australian orders typically arrive within 1-2 weeks. International shipping takes 2-4 weeks depending on location. Please note: delivery times may be extended during holiday periods and peak seasons.' },
   { q: 'What payment methods do you accept?', a: 'We accept Visa, Mastercard, Amex, PayPal, Apple Pay, Google Pay, Afterpay, and Zip. Pay in 4 interest-free instalments with Afterpay!' },
   { q: 'Can I return my bundle?', a: 'Yes! 30-day money-back guarantee on unused items in original packaging. See our Returns Policy for details.' },
   { q: 'Do you ship internationally?', a: 'Yes! We ship to NZ, USA, UK, Singapore, Canada and more. International shipping rates apply.' },
