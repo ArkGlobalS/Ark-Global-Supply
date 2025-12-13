@@ -10,16 +10,6 @@ const Header = ({ cart, setShowCart, country, setShowCountry, currentPage, setCu
   
   return (
     <>
-      <div style={{ 
-        background: getPageAccent(), 
-        color: '#fff', 
-        textAlign: 'center', 
-        padding: '10px 20px', 
-        fontSize: 13, 
-        fontWeight: 600 
-      }}>
-        🔥 FREE SHIPPING ON ORDERS OVER ${SITE.shipping.freeThreshold} | USE CODE <strong>SAVE10</strong> FOR 10% OFF
-      </div>
       <header style={{ 
         background: COLORS.bg, 
         borderBottom: `1px solid ${COLORS.border}`, 
