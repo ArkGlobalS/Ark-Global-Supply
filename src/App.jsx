@@ -34,7 +34,7 @@ function App() {
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showReturns, setShowReturns] = useState(false);
   const [showExitIntent, setShowExitIntent] = useState(false);
-  const [exitIntentShown, setExitIntentShown] = useState(false);
+  const [exitIntentShown, setExitIntentShown] = useState(true); // Disabled - set to true so it never shows
   const [notification, setNotification] = useState({ show: false, message: '' });
   const [socialProof, setSocialProof] = useState({ show: false, data: null });
   const [isLoading, setIsLoading] = useState(false);
